@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+		   http://www.springframework.org/schema/tx
+		   http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd
+           http://www.springframework.org/schema/hadoop 
+           http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+
+	<!-- <context:annotation-config /> -->
+
+	<context:component-scan base-package="org.jai.search" />
+
+
+	<!-- To run job and hive etc. put hadoop cluster start and yarn startup as spring beans for setup like the
+	elastic search client/node startup. 
+	<hdp:hive-server host="localhost" port="10001" />
+	
+	<hdp:configuration>
+		fs.default.name=hdfs://localhost.localdomain:51234
+		hadoop.tmp.dir=/tmp/hadoop
+		electric=sea
+	</hdp:configuration>
+	<hdp:job id="mr-job-example1" input-path="/input/" output-path="/ouput/"
+		mapper="org.jai.hadoop.example.MaxTemperatureMapper" 
+		reducer="org.jai.hadoop.example.MaxTemperatureReducer" />
+		
+	<hdp:job-runner id="myjob-runner-example" 
+	job-ref="mr-job-example1" run-at-startup="true"/>
+	
+	 <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" />  -->
+</beans>
