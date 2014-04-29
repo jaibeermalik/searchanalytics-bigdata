@@ -1,0 +1,45 @@
+package org.jai.hadoop;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
+import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
+import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
+import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ContextPostLoadAndPreDestroyHandler {
+
+	@Autowired
+	private HadoopClusterService hadoopClusterService;
+	@Autowired
+	private FlumeESSinkService flumeESSinkService;
+	@Autowired
+	private FlumeHDFSSinkService flumeHDFSSinkService;
+	
+	@PostConstruct
+	public void start()
+	{
+		hadoopClusterService.start();
+		flumeESSinkService.start();
+		flumeHDFSSinkService.start();
+	}
+
+	@PreDestroy
+	public void shutdown()
+	{
+		flumeESSinkService.shutdown();
+		flumeHDFSSinkService.shutdown();
+		//wait 5 sec for others to get closed.
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+//			throw RuntimeException()
+		}
+		hadoopClusterService.shutdown();
+	}
+
+}
