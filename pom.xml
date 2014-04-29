@@ -11,7 +11,8 @@
 		<jackson.version>1.9.3</jackson.version>
 		<fastxml.jackson.version>2.3.0-rc1</fastxml.jackson.version>
 		<flume.version>1.4.0</flume.version>
-		<hive.version>0.12.0</hive.version>
+		<hive.version>0.12.0-cdh5.0.0</hive.version>  
+		<!-- <hive.version>0.12.0</hive.version>  -->
 		<!-- <hadoop.version>2.4.0</hadoop.version> -->
 		<hadoop.version>2.3.0-cdh5.0.0</hadoop.version>
 		<hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version>
@@ -180,9 +181,34 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-common</artifactId>
+			<version>${hive.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-serde</artifactId>
 			<version>${hive.version}</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-metastore</artifactId>
+			<version>${hive.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-jdbc</artifactId>
+			<version>${hive.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-service</artifactId>
+			<version>${hive.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-testutils</artifactId>
+			<version>${hive.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>

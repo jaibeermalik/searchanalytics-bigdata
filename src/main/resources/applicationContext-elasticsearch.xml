@@ -18,24 +18,29 @@
 
 	<!-- <context:annotation-config /> -->
 
-	<context:component-scan base-package="org.jai.search" />
+	<context:component-scan base-package="org.jai" />
 
 
 	<!-- To run job and hive etc. put hadoop cluster start and yarn startup as spring beans for setup like the
 	elastic search client/node startup. 
-	<hdp:hive-server host="localhost" port="10001" />
+	-->
 	
-	<hdp:configuration>
-		fs.default.name=hdfs://localhost.localdomain:51234
-		hadoop.tmp.dir=/tmp/hadoop
-		electric=sea
+	<!-- 
+	-->
+	<hdp:configuration id="hadoopConfiguration">
+		fs.default.name=hdfs://localhost.localdomain:54321
 	</hdp:configuration>
-	<hdp:job id="mr-job-example1" input-path="/input/" output-path="/ouput/"
+
+	<hdp:hive-server auto-startup="true" port="10234" min-threads="1" id="hiveServer" configuration-ref="hadoopConfiguration"/> 
+	<!--  	
+	<hdp:job id="mr-job-example1" input-path="/searchevents" output-path="/ouput/" 
 		mapper="org.jai.hadoop.example.MaxTemperatureMapper" 
 		reducer="org.jai.hadoop.example.MaxTemperatureReducer" />
-		
-	<hdp:job-runner id="myjob-runner-example" 
-	job-ref="mr-job-example1" run-at-startup="true"/>
-	
+
+	<hdp:job-runner id="myjob-runner-example" kill-job-at-shutdown="true"  
+	job-ref="mr-job-example1" run-at-startup="true" />
+	-->
+
+	<!-- 
 	 <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" />  -->
 </beans>

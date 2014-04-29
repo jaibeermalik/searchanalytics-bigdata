@@ -1,17 +1,22 @@
 package org.jai.search.analytics;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy.PropertyNamingStrategyBase;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
-import org.apache.flume.agent.embedded.EmbeddedAgent;
 import org.apache.flume.event.JSONEvent;
 import org.elasticsearch.search.sort.SortOrder;
+import org.jai.flume.agent.FlumeAgentService;
 import org.jai.search.model.ElasticSearchIndexConfig;
 import org.jai.search.model.FacetResult;
 import org.jai.search.model.FacetResultEntry;
@@ -25,20 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy.PropertyNamingStrategyBase;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Service
 public class GenerateSearchAnalyticsDataImpl implements GenerateSearchAnalyticsDataService
@@ -49,22 +46,9 @@ public class GenerateSearchAnalyticsDataImpl implements GenerateSearchAnalyticsD
     @Autowired
     private ProductQueryService productQueryService;
 
-    private static EmbeddedAgent agent;
+    @Autowired
+    private FlumeAgentService flumeAgentService;
 
-    @PostConstruct
-    public void setupAgent()
-    {
-        createAgent();
-    }
-
-    @PreDestroy
-    public void setupAfter()
-    {
-        if (agent != null)
-        {
-            agent.stop();
-        }
-    }
 
     @Override
     public void generateAndPushSearchEvents(final int numberOfEvents) throws UnknownHostException, JsonProcessingException,
@@ -84,7 +68,7 @@ public class GenerateSearchAnalyticsDataImpl implements GenerateSearchAnalyticsD
             }
             final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(i, searchProducts);
             final Event event = getJsonEvent(searchQueryInstruction);
-            getAgent().put(event);
+            flumeAgentService.getFlumeAgent().put(event);
         }
         // ObjectMapper mapper = new ObjectMapper();
         // for (Product product : searchProducts.getProducts())
@@ -254,49 +238,7 @@ public class GenerateSearchAnalyticsDataImpl implements GenerateSearchAnalyticsD
         return filters;
     }
 
-    private EmbeddedAgent getAgent()
-    {
-        if (agent == null)
-        {
-            createAgent();
-        }
-        return agent;
-    }
-
-    private void createAgent()
-    {
-        final Map<String, String> properties = new HashMap<String, String>();
-        properties.put("channel.type", "memory");
-        properties.put("channel.capacity", "200");
-        // a1.channels.c1.type = file
-        // a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
-        // a1.channels.c1.dataDirs = /mnt/flume/data
-        // properties.put("sinks", "sink1 sink2");
-        properties.put("sinks", "sink1");
-        properties.put("sink1.type", "avro");
-        // properties.put("sink1.type", "logger");
-        // properties.put("sink2.type", "avro");
-//        properties.put("sink1.hostname", "jaibigdata.com");
-        properties.put("sink1.hostname", "localhost");
-        properties.put("sink1.port", "41414");
-        // properties.put("sink2.hostname", "localhost");
-        // properties.put("sink2.port", "5565");
-        // properties.put("processor.type", "load_balance");
-        properties.put("processor.type", "default");
-        // properties.put("sinks", "sink1");
-        // properties.put("sink1.type", "logger");
-        // properties.put("sink1.channel", "channel");
-        try
-        {
-            agent = new EmbeddedAgent("myagent");
-            agent.configure(properties);
-            agent.start();
-        }
-        catch (final Exception ex)
-        {
-            searchEventsLogger.error("Error creating agent!", ex);
-        }
-    }
+    
 
     @SuppressWarnings("serial")
     private static class SearchFieldsLowerCaseNameStrategy extends PropertyNamingStrategyBase
