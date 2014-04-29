@@ -26,6 +26,7 @@ import org.elasticsearch.search.SearchHits;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.jai.hive.HiveSearchClicksService;
 import org.jai.search.analytics.GenerateSearchAnalyticsDataService;
 import org.jai.search.client.SearchClientService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
@@ -44,6 +45,8 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	private FlumeESSinkService flumeESSinkService;
 	@Autowired
 	private FlumeHDFSSinkService flumeHDFSSinkService;
+	@Autowired
+	private HiveSearchClicksService hiveSearchClicksService;
 
 	@Test
 	public void test() {
@@ -60,12 +63,24 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 			// Write events to hdfs sink and test data.
 			FlumehdfsSinkAndTestData(searchEvents);
 
-			FlumeESSinkAndTestData(searchEvents);
+//			FlumeESSinkAndTestData(searchEvents);
+			
+			TestHiveDatabase();
 
 		} catch (EventDeliveryException | InterruptedException | IOException e) {
 			e.printStackTrace();
 			fail();
 		}
+	}
+
+	private void TestHiveDatabase() {
+		for (String dbString : hiveSearchClicksService.getDbs()) {
+			System.out.println("Db name is:" + dbString);
+			for (String TbString : hiveSearchClicksService.getTables(dbString)) {
+				System.out.println("Table name is:" + TbString);
+			}
+		}
+		hiveSearchClicksService.setupSearchClicksTable();
 	}
 
 	private void FlumeESSinkAndTestData(List<Event> searchEvents)

@@ -3,6 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:p="http://www.springframework.org/schema/p" xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:c="http://www.springframework.org/schema/c"
 	xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
@@ -21,26 +22,57 @@
 	<context:component-scan base-package="org.jai" />
 
 
-	<!-- To run job and hive etc. put hadoop cluster start and yarn startup as spring beans for setup like the
-	elastic search client/node startup. 
-	-->
-	
-	<!-- 
-	-->
+	<!-- To run job and hive etc. put hadoop cluster start and yarn startup 
+		as spring beans for setup like the elastic search client/node startup. -->
+
+	<!-- -->
 	<hdp:configuration id="hadoopConfiguration">
 		fs.default.name=hdfs://localhost.localdomain:54321
 	</hdp:configuration>
 
-	<hdp:hive-server auto-startup="true" port="10234" min-threads="1" id="hiveServer" configuration-ref="hadoopConfiguration"/> 
-	<!--  	
-	<hdp:job id="mr-job-example1" input-path="/searchevents" output-path="/ouput/" 
-		mapper="org.jai.hadoop.example.MaxTemperatureMapper" 
-		reducer="org.jai.hadoop.example.MaxTemperatureReducer" />
+	<hdp:hive-server auto-startup="true" port="10234"
+		min-threads="1" id="hiveServer" configuration-ref="hadoopConfiguration">
+		hive.exec.scratchdir=./target/hivetmp
+	</hdp:hive-server>
+	
+	<hdp:hive-client-factory id="hiveClientFactory"
+		host="localhost" port="10234">
+			<!-- 
+		<hdp:script>
+			DROP DATABASE IF EXISTS search;
+			CREATE DATABASE search;
+		</hdp:script>
+		<hdp:script location="classpath:org/jai/hive/script.q">
 
-	<hdp:job-runner id="myjob-runner-example" kill-job-at-shutdown="true"  
-	job-ref="mr-job-example1" run-at-startup="true" />
-	-->
+			<hdp:arguments>ignore-case=true</hdp:arguments> 
+		</hdp:script>
+			-->
+	</hdp:hive-client-factory>
+	<bean id="hive-driver" class="org.apache.hadoop.hive.jdbc.HiveDriver" />
+	<bean id="hive-ds"
+		class="org.springframework.jdbc.datasource.SimpleDriverDataSource"
+		c:driver-ref="hive-driver" c:url="jdbc:hive://localhost:10234/default" />
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
+		c:data-source-ref="hive-ds" />
 
-	<!-- 
-	 <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" />  -->
+	<hdp:hive-template id="hiveTemplate"
+		hive-client-factory-ref="hiveClientFactory" />
+
+	<hdp:hive-runner id="hiveRunner" run-at-startup="false" 
+		hive-client-factory-ref="hiveClientFactory">
+		
+		<hdp:script>
+			DROP DATABASE IF EXISTS search;
+			CREATE DATABASE search;
+		</hdp:script>
+		<hdp:script location="hive/create-searchevents-externaltable.q" />
+	</hdp:hive-runner>
+
+	<!-- <hdp:job id="mr-job-example1" input-path="/searchevents" output-path="/ouput/" 
+		mapper="org.jai.hadoop.example.MaxTemperatureMapper" reducer="org.jai.hadoop.example.MaxTemperatureReducer" 
+		/> <hdp:job-runner id="myjob-runner-example" kill-job-at-shutdown="true" 
+		job-ref="mr-job-example1" run-at-startup="true" /> -->
+
+	<!-- <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" 
+		/> -->
 </beans>
