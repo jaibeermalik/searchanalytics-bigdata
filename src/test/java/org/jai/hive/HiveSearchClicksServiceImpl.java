@@ -1,22 +1,15 @@
 package org.jai.hive;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 import org.apache.hadoop.hive.service.HiveClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.hadoop.hive.HiveClientCallback;
 import org.springframework.data.hadoop.hive.HiveRunner;
+import org.springframework.data.hadoop.hive.HiveScript;
 import org.springframework.data.hadoop.hive.HiveTemplate;
 import org.springframework.stereotype.Service;
 
@@ -53,16 +46,50 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 		});
 	}
 
-	public void setupSearchClicksTable() {
-		Collection<Callable<?>> actions = null;
-		hiveRunner.setPreAction(actions);
+	private void setupSearchClicksExternalTable() {
 		try {
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource("hive/create-searchevents-externaltable.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
 			hiveRunner.call();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(
 					"Failed to setup search_clicks table in hive!", e);
 		}
+	}
+	
+	private void setupSearchDatabase() {
+		try {
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource("hive/drop-create-search-database.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			hiveRunner.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+					"Failed to setup search_clicks table in hive!", e);
+		}
+//		hiveTemplate.execute(new HiveClientCallback<Database>() {
+//			@Override
+//			public Database doInHive(HiveClient hiveClient)
+//					throws Exception {
+//				String dbName = "search";
+//				hiveClient.drop_database(dbName, true, true);
+//				Database database = new Database();
+//				database.setName(dbName);
+//				hiveClient.create_database(database);
+//				return database;
+//			}
+//		});
+	}
+	
+	@Override
+	public void setup() {
+		setupSearchDatabase();
+		setupSearchClicksExternalTable();
 	}
 
 }

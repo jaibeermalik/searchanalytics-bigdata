@@ -10,11 +10,19 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class JsonSerdeServiceImpl implements JsonSerdeService {
 
 	@Override
 	public String getJsonJarPath() {
 		return createJsonSerdeJarFile();
+	}
+	
+	@Override
+	public void build() {
+		createJsonSerdeJarFile();
 	}
 	
 	private String createJsonSerdeJarFile() {

@@ -28,7 +28,7 @@ public class MaxTemperatureDriver extends Configured implements Tool
         job.setReducerClass(MaxTemperatureReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
-        System.exit(job.waitForCompletion(true) ? 0 : 1);
+//        System.exit(job.waitForCompletion(true) ? 0 : 1);
         boolean success = job.waitForCompletion(true);
         return success ? 0 : 1;
     }

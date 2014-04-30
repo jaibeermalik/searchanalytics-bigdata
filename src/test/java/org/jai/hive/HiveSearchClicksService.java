@@ -8,5 +8,5 @@ public interface HiveSearchClicksService {
 	
 	List<String> getTables(String dnName);
 	
-	void setupSearchClicksTable();
+	void setup();
 }

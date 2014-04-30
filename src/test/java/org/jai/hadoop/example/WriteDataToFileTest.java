@@ -63,7 +63,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 			// Write events to hdfs sink and test data.
 			FlumehdfsSinkAndTestData(searchEvents);
 
-//			FlumeESSinkAndTestData(searchEvents);
+			FlumeESSinkAndTestData(searchEvents);
 			
 			TestHiveDatabase();
 
@@ -74,13 +74,13 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	}
 
 	private void TestHiveDatabase() {
+		hiveSearchClicksService.setup();
 		for (String dbString : hiveSearchClicksService.getDbs()) {
 			System.out.println("Db name is:" + dbString);
 			for (String TbString : hiveSearchClicksService.getTables(dbString)) {
 				System.out.println("Table name is:" + TbString);
 			}
 		}
-		hiveSearchClicksService.setupSearchClicksTable();
 	}
 
 	private void FlumeESSinkAndTestData(List<Event> searchEvents)

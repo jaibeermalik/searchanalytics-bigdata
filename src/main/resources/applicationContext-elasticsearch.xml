@@ -21,32 +21,28 @@
 
 	<context:component-scan base-package="org.jai" />
 
-
 	<!-- To run job and hive etc. put hadoop cluster start and yarn startup 
 		as spring beans for setup like the elastic search client/node startup. -->
 
 	<!-- -->
 	<hdp:configuration id="hadoopConfiguration">
 		fs.default.name=hdfs://localhost.localdomain:54321
+		signature.secret=blahblahASDA12313Aasdaadssa
 	</hdp:configuration>
 
+	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar -->
 	<hdp:hive-server auto-startup="true" port="10234"
-		min-threads="1" id="hiveServer" configuration-ref="hadoopConfiguration">
+		min-threads="3" id="hiveServer" configuration-ref="hadoopConfiguration">
 		hive.exec.scratchdir=./target/hivetmp
+		javax.jdo.option.ConnectionURL=jdbc:derby:;databaseName=./target/metastore_db;create=true
+		javax.jdo.option.ConnectionDriverName=org.apache.derby.jdbc.EmbeddedDriver
 	</hdp:hive-server>
-	
+
 	<hdp:hive-client-factory id="hiveClientFactory"
 		host="localhost" port="10234">
-			<!-- 
-		<hdp:script>
-			DROP DATABASE IF EXISTS search;
-			CREATE DATABASE search;
-		</hdp:script>
-		<hdp:script location="classpath:org/jai/hive/script.q">
-
-			<hdp:arguments>ignore-case=true</hdp:arguments> 
-		</hdp:script>
-			-->
+		<!-- <hdp:script> DROP DATABASE IF EXISTS search; CREATE DATABASE search; 
+			</hdp:script> <hdp:script location="classpath:org/jai/hive/script.q"> <hdp:arguments>ignore-case=true</hdp:arguments> 
+			</hdp:script> -->
 	</hdp:hive-client-factory>
 	<bean id="hive-driver" class="org.apache.hadoop.hive.jdbc.HiveDriver" />
 	<bean id="hive-ds"
@@ -58,14 +54,11 @@
 	<hdp:hive-template id="hiveTemplate"
 		hive-client-factory-ref="hiveClientFactory" />
 
-	<hdp:hive-runner id="hiveRunner" run-at-startup="false" 
+	<hdp:hive-runner id="hiveRunner" run-at-startup="false"
 		hive-client-factory-ref="hiveClientFactory">
-		
-		<hdp:script>
-			DROP DATABASE IF EXISTS search;
-			CREATE DATABASE search;
-		</hdp:script>
-		<hdp:script location="hive/create-searchevents-externaltable.q" />
+		<!-- <hdp:script> DROP DATABASE IF EXISTS search CASCADE; CREATE DATABASE 
+			search; </hdp:script> <hdp:script location="hive/create-searchevents-externaltable.q" 
+			/> -->
 	</hdp:hive-runner>
 
 	<!-- <hdp:job id="mr-job-example1" input-path="/searchevents" output-path="/ouput/" 
@@ -75,4 +68,6 @@
 
 	<!-- <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" 
 		/> -->
+
+
 </beans>

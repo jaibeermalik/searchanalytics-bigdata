@@ -6,6 +6,8 @@ import javax.annotation.PreDestroy;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.jai.hive.HiveSearchClicksService;
+import org.jai.hive.serde.JsonSerdeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +20,20 @@ public class ContextPostLoadAndPreDestroyHandler {
 	private FlumeESSinkService flumeESSinkService;
 	@Autowired
 	private FlumeHDFSSinkService flumeHDFSSinkService;
+	@Autowired
+	private JsonSerdeService jsonSerdeService;
+	@Autowired
+	private HiveSearchClicksService hiveSearchClicksService;
 	
 	@PostConstruct
 	public void start()
 	{
+		//NOT required, may be for dependency jar later.
+//		jsonSerdeService.build();
 		hadoopClusterService.start();
 		flumeESSinkService.start();
 		flumeHDFSSinkService.start();
+//		hiveSearchClicksService.setup();
 	}
 
 	@PreDestroy
