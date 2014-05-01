@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -11,6 +12,7 @@ import org.springframework.data.hadoop.hive.HiveClientCallback;
 import org.springframework.data.hadoop.hive.HiveRunner;
 import org.springframework.data.hadoop.hive.HiveScript;
 import org.springframework.data.hadoop.hive.HiveTemplate;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +20,9 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 
 	@Autowired
 	private HiveTemplate hiveTemplate;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+	
 
 	@Autowired
 	private HiveRunner hiveRunner;
@@ -84,6 +89,30 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 //				return database;
 //			}
 //		});
+	}
+	
+	@Override
+	public int getTotalSearchClicksCount() {
+//		Integer queryForObject = jdbcTemplate.queryForObject("select count(*) from search.search_clicks", Integer.class);
+//		return queryForObject;
+		hiveTemplate.execute(new HiveClientCallback<Integer>() {
+			@Override
+			public Integer doInHive(HiveClient hiveClient)
+					throws Exception {
+				List<Partition> get_partitions = hiveClient.get_partitions("search", "search_clicks", Short.MAX_VALUE);
+				for (Partition partition : get_partitions) {
+					System.out.println("par: " + partition.getCreateTime());
+				}
+				return 0;
+			}
+		});
+		return hiveTemplate.execute(new HiveClientCallback<Integer>() {
+			@Override
+			public Integer doInHive(HiveClient hiveClient)
+					throws Exception {
+				return hiveClient.fetchAll().size();
+			}
+		});
 	}
 	
 	@Override

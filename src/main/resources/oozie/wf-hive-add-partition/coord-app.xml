@@ -1,0 +1,56 @@
+<coordinator-app name="add-partition-coord" frequency="${coord:hours(1)}" start="${jobStart}" end="${jobEnd}" timezone="UTC" xmlns="uri:oozie:coordinator:0.1">
+	<controls>
+		<timeout>1</timeout> 
+		<concurrency>4</concurrency>
+		<execution>FIFO</execution>
+      </controls>	
+	<datasets>
+		<dataset name="searchevents" frequency="${coord:hours(1)}" initial-instance="${initialDataset}" timezone="Europe/Amsterdam">
+			<uri-template>hdfs://jaibigdata.com:8020/searchevents/${YEAR}/${MONTH}/${DAY}/${HOUR}</uri-template>
+                        <done-flag></done-flag> <!-- empty will check if the dir itself exists or not-->
+                </dataset>
+	</datasets>
+        <input-events>
+        	<data-in name="input" dataset="searchevents">
+                	<instance>${coord:current(coord:tzOffset() / 60)}</instance>
+                </data-in>
+                <!--
+                <data-in name="readyIndicator" dataset="searchevents">
+                <instance>${coord:current(1 + (coord:tzOffset() / 60))}</instance>
+                </data-in>
+                -->
+         </input-events>
+         <action>
+         	<workflow>
+                	<app-path>${workflowRoot}/hive-action.xml</app-path>
+                        <configuration>
+		                <property>
+		                	<name>wfInput</name>
+		                        <value>${coord:dataIn('input')}</value>
+		                </property>
+		                <property>
+		                	<name>YEAR</name>
+		                	<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'yyyy')}</value>
+		                </property>
+		                <property>
+					<name>MONTH</name>
+					<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'MM')}</value>
+				</property>
+				<property>
+					<name>DAY</name>
+				        <value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'dd')}</value>
+				</property>
+				<property>
+					<name>HOUR</name>
+					<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'HH')}</value>
+				</property>
+				<!--				
+				<property>
+					<name>dateHour</name>
+					<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'yyyyMMddHH')}</value>
+				</property>
+				-->
+			</configuration>
+		</workflow>
+	</action>
+</coordinator-app>

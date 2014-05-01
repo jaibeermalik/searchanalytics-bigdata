@@ -9,4 +9,6 @@ public interface HiveSearchClicksService {
 	List<String> getTables(String dnName);
 	
 	void setup();
+
+	int getTotalSearchClicksCount();
 }

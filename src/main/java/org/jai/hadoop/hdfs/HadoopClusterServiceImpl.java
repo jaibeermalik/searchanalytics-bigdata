@@ -31,6 +31,11 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 				+ miniDFSCluster.getNameNodePort();
 		return hdfsURI;
 	}
+	
+	@Override
+	public String getJobTRackerUri() {
+		return "localhost.localdomain:" + miniMRCluster.getJobTrackerPort();
+	}
 
 	@Override
 	public void start() {
@@ -57,6 +62,12 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		Configuration configuration = new Configuration();
 		configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
 		configuration.set("hadoop.log.dir", new File("target/logs").getAbsolutePath());
+		configuration.set("hadoop.proxyuser.oozie.hosts", "*");
+		configuration.set("hadoop.proxyuser.oozie.groups", "*");
+		configuration.set("hadoop.proxyuser.tom.hosts", "*");
+		configuration.set("hadoop.proxyuser.tom.groups", "*");
+		configuration.set("hadoop.proxyuser.mapred.hosts", "*");
+		configuration.set("hadoop.proxyuser.mapred.groups", "*");
 		
 		System.setProperty("hadoop.log.dir", new File("target/logs").getAbsolutePath());
 		

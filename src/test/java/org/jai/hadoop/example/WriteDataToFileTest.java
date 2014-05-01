@@ -27,6 +27,7 @@ import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.hdfs.HadoopClusterService;
 import org.jai.hive.HiveSearchClicksService;
+import org.jai.oozie.OozieJobsService;
 import org.jai.search.analytics.GenerateSearchAnalyticsDataService;
 import org.jai.search.client.SearchClientService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
@@ -47,7 +48,9 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	private FlumeHDFSSinkService flumeHDFSSinkService;
 	@Autowired
 	private HiveSearchClicksService hiveSearchClicksService;
-
+	@Autowired
+	private OozieJobsService oozieJobsService;
+	
 	@Test
 	public void test() {
 		try {
@@ -66,11 +69,21 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 			FlumeESSinkAndTestData(searchEvents);
 			
 			TestHiveDatabase();
+			
+			startOozieAddHivePartitionJob();
+			//sleep 10 sec for partition to be added.
+			Thread.sleep(100*1000);
+			int searchClicksCount = hiveSearchClicksService.getTotalSearchClicksCount();
+			System.out.println("Search clicks count is:" + searchClicksCount);
 
 		} catch (EventDeliveryException | InterruptedException | IOException e) {
 			e.printStackTrace();
 			fail();
 		}
+	}
+
+	private void startOozieAddHivePartitionJob() {
+		oozieJobsService.startHiveAddPartitionCoordJob();
 	}
 
 	private void TestHiveDatabase() {

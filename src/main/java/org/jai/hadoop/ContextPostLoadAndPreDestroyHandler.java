@@ -8,6 +8,8 @@ import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.hdfs.HadoopClusterService;
 import org.jai.hive.HiveSearchClicksService;
 import org.jai.hive.serde.JsonSerdeService;
+import org.jai.oozie.OozieJobsService;
+import org.jai.oozie.OozieJobsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,8 @@ public class ContextPostLoadAndPreDestroyHandler {
 	private JsonSerdeService jsonSerdeService;
 	@Autowired
 	private HiveSearchClicksService hiveSearchClicksService;
+	@Autowired
+	private OozieJobsService oozieJobsService;
 	
 	@PostConstruct
 	public void start()
@@ -34,11 +38,13 @@ public class ContextPostLoadAndPreDestroyHandler {
 		flumeESSinkService.start();
 		flumeHDFSSinkService.start();
 //		hiveSearchClicksService.setup();
+		oozieJobsService.setup();
 	}
 
 	@PreDestroy
 	public void shutdown()
 	{
+		oozieJobsService.shutdown();
 		flumeESSinkService.shutdown();
 		flumeHDFSSinkService.shutdown();
 		//wait 5 sec for others to get closed.

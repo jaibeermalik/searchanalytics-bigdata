@@ -1,0 +1,33 @@
+<workflow-app xmlns="uri:oozie:workflow:0.3" name="hive-add-partition-searchevents-wf">
+  <start to="hive-add-partition-searchevents"/>
+  <action name="hive-add-partition-searchevents" retry-max="2" retry-interval="1">
+	<hive xmlns="uri:oozie:hive-action:0.3">
+            <job-tracker>${jobTracker}</job-tracker>
+                  <name-node>${nameNode}</name-node>
+                        <prepare>
+                                <delete path="${workflowRoot}/output-data/hive"/>
+                                <mkdir path="${workflowRoot}/output-data"/>
+                        </prepare>
+                        <job-xml>${workflowRoot}/hive-site.xml</job-xml>
+                        <configuration>
+                        	<property>
+                                	<name>oozie.hive.defaults</name>
+                                        <value>${workflowRoot}/hive-site.xml</value>
+                                </property>
+                        </configuration>
+                        <script>add_partition_hive_searchevents_script.q</script>
+                        <param>WFINPUT=${wfInput}</param>
+                        <!-- <param>DATEHOUR=${dateHour}</param> -->
+                        <param>YEAR=${YEAR}</param>
+                        <param>MONTH=${MONTH}</param>
+                        <param>DAY=${DAY}</param>
+                        <param>HOUR=${HOUR}</param>
+                        </hive>
+        <ok to="end"/>
+        <error to="fail"/>
+  </action>
+  <kill name="fail">
+  	<message>Hive failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+  </kill>
+  <end name="end"/>
+</workflow-app>
