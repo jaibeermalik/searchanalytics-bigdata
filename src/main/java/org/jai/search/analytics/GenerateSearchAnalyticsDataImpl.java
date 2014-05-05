@@ -17,7 +17,7 @@ import org.apache.flume.EventDeliveryException;
 import org.apache.flume.event.JSONEvent;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jai.flume.agent.FlumeAgentService;
-import org.jai.search.model.ElasticSearchIndexConfig;
+import org.jai.search.config.ElasticSearchIndexConfig;
 import org.jai.search.model.FacetResult;
 import org.jai.search.model.FacetResultEntry;
 import org.jai.search.model.ProductSearchResult;

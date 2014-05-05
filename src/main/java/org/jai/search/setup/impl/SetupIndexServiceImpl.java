@@ -2,6 +2,18 @@ package org.jai.search.setup.impl;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequestBuilder;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
@@ -12,9 +24,9 @@ import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.routing.IndexRoutingTable;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.jai.search.client.SearchClientService;
-import org.jai.search.data.SampleDataGenerator;
-import org.jai.search.index.IndexProductData;
-import org.jai.search.model.ElasticSearchIndexConfig;
+import org.jai.search.config.ElasticSearchIndexConfig;
+import org.jai.search.data.SampleDataGeneratorService;
+import org.jai.search.index.IndexProductDataService;
 import org.jai.search.model.ProductGroup;
 import org.jai.search.setup.IndexSchemaBuilder;
 import org.jai.search.setup.SetupIndexService;
@@ -22,16 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 @Service
 public class SetupIndexServiceImpl implements SetupIndexService
@@ -42,27 +44,34 @@ public class SetupIndexServiceImpl implements SetupIndexService
     private SearchClientService searchClientService;
 
     @Autowired
-    private IndexProductData indexProductData;
+    private IndexProductDataService indexProductData;
 
     @Autowired
-    private SampleDataGenerator sampleDataGenerator;
+    private SampleDataGeneratorService sampleDataGenerator;
 
     @Override
     public void setupAllIndices(final boolean parentRelationship)
     {
         for (final ElasticSearchIndexConfig config : ElasticSearchIndexConfig.values())
         {
-            recreateIndex(config);
+            reCreateIndex(config);
             // add mappings
-            updateDocumentTypeMapping(config, config.getGroupDocumentType(), parentRelationship);
-            updateDocumentTypeMapping(config, config.getDocumentType(), parentRelationship);
-            updateDocumentTypeMapping(config, config.getPropertiesDocumentType(), parentRelationship);
+            updateDocumentTypeMapping(config, null, config.getGroupDocumentType(), parentRelationship);
+            updateDocumentTypeMapping(config, null, config.getDocumentType(), parentRelationship);
+            updateDocumentTypeMapping(config, null, config.getPropertiesDocumentType(), parentRelationship);
             // index all data
-            indexProductData.indexAllProductGroupData(config, sampleDataGenerator.generateNestedDocumentsSampleData(), parentRelationship);
+            indexProductData.indexAllProducts(config, sampleDataGenerator.generateProductsSampleData());
         }
     }
 
-    private void recreateIndex(final ElasticSearchIndexConfig config)
+    @Override
+    public void setupAllIndices()
+    {
+        setupAllIndices(false);
+    }
+
+    @Override
+    public void reCreateIndex(final ElasticSearchIndexConfig config)
     {
         final Date date = new Date();
         final String suffixedIndexName = getSuffixedIndexName(config.getIndexAliasName(), date);
@@ -72,17 +81,33 @@ public class SetupIndexServiceImpl implements SetupIndexService
             deleteIndex(suffixedIndexName);
         }
         // create indices
-        createGivenIndex(config, suffixedIndexName);
+        createGivenIndex(config, suffixedIndexName, true);
+    }
+
+    @Override
+    public String createNewIndex(final ElasticSearchIndexConfig config)
+    {
+        final Date date = new Date();
+        final String suffixedIndexName = getSuffixedIndexName(config.getIndexAliasName(), date);
+        if (isIndexExists(suffixedIndexName))
+        {
+            // drop existing index
+            deleteIndex(suffixedIndexName);
+        }
+        // create indices
+        createGivenIndex(config, suffixedIndexName, false);
+        updateIndexDocumentTypeMappings(config, suffixedIndexName);
+        return suffixedIndexName;
     }
 
     @Override
     public void createIndex(final ElasticSearchIndexConfig config)
     {
         final String suffixedIndexName = getSuffixedIndexName(config.getIndexAliasName(), new Date());
-        createGivenIndex(config, suffixedIndexName);
+        createGivenIndex(config, suffixedIndexName, true);
     }
 
-    private void createGivenIndex(final ElasticSearchIndexConfig config, final String indexName)
+    private void createGivenIndex(final ElasticSearchIndexConfig config, final String indexName, final boolean createAlias)
     {
         final Client client = searchClientService.getClient();
         CreateIndexRequestBuilder createIndexRequestBuilder;
@@ -97,7 +122,10 @@ public class SetupIndexServiceImpl implements SetupIndexService
         }
         // update mapping on server
         createIndexRequestBuilder.execute().actionGet();
-        createAlias(config.getIndexAliasName(), indexName);
+        if (createAlias)
+        {
+            createAlias(config.getIndexAliasName(), indexName);
+        }
         logger.debug("Index {} created! ", indexName);
     }
 
@@ -107,6 +135,12 @@ public class SetupIndexServiceImpl implements SetupIndexService
         searchClientService.getClient().admin().indices().prepareAliases().addAlias(indexName, aliasName).get();
         // clean up old alias
         cleanupExistingOldIndex(indexName, aliasName);
+    }
+
+    @Override
+    public void replaceAlias(final String newIndexName, final String indexAliasName)
+    {
+        createAlias(indexAliasName, newIndexName);
     }
 
     private void cleanupExistingOldIndex(final String newIndex, final String aliasName)
@@ -153,7 +187,7 @@ public class SetupIndexServiceImpl implements SetupIndexService
     {
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         final String suffix = sdf.format(date);
-        return indexName + suffix;
+        return indexName + suffix + new Random().nextInt(86400);
     }
 
     @Override
@@ -167,11 +201,17 @@ public class SetupIndexServiceImpl implements SetupIndexService
     }
 
     @Override
-    public void updateDocumentTypeMapping(final ElasticSearchIndexConfig config, final String documentType, final boolean parentRelationship)
+    public void updateDocumentTypeMapping(final ElasticSearchIndexConfig config, final String indexName, final String documentType,
+            final boolean parentRelationship)
     {
+        String usedIndexName = indexName;
+        if (StringUtils.isBlank(indexName))
+        {
+            usedIndexName = config.getIndexAliasName();
+        }
         try
         {
-            searchClientService.getClient().admin().indices().preparePutMapping(config.getIndexAliasName()).setType(documentType)
+            searchClientService.getClient().admin().indices().preparePutMapping(usedIndexName).setType(documentType)
                     .setSource(new IndexSchemaBuilder().getDocumentTypeMapping(config, documentType, parentRelationship)).get();
         }
         catch (final IOException e)
@@ -181,12 +221,21 @@ public class SetupIndexServiceImpl implements SetupIndexService
     }
 
     @Override
+    public void updateIndexDocumentTypeMappings(final ElasticSearchIndexConfig config, final String indexName)
+    {
+        // add mappings, no parent-child for now
+        updateDocumentTypeMapping(config, indexName, config.getGroupDocumentType(), false);
+        updateDocumentTypeMapping(config, indexName, config.getDocumentType(), false);
+        updateDocumentTypeMapping(config, indexName, config.getPropertiesDocumentType(), false);
+    }
+
+    @Override
     public void indexProductGroupData(final List<ProductGroup> productGroups)
     {
         for (final ElasticSearchIndexConfig config : ElasticSearchIndexConfig.values())
         {
-            recreateIndex(config);
-            indexProductData.indexAllProductGroupData(config, productGroups, true);
+            reCreateIndex(config);
+            // indexProductData.indexAllProductGroupData(config, productGroups, true);
         }
     }
 
@@ -206,7 +255,8 @@ public class SetupIndexServiceImpl implements SetupIndexService
     public String getIndexSettings(final ElasticSearchIndexConfig config, final String settingName)
     {
         String settingValue = null;
-        final ClusterStateResponse clusterStateResponse = searchClientService.getClient().admin().cluster().prepareState().get();
+        final ClusterStateResponse clusterStateResponse = searchClientService.getClient().admin().cluster().prepareState()
+                .setRoutingTable(true).setNodes(true).setIndices(config.getIndexAliasName()).get();
         for (final IndexMetaData indexMetaData : clusterStateResponse.getState().getMetaData())
         {
             settingValue = indexMetaData.getSettings().get(settingName);

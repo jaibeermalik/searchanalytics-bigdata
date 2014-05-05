@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
@@ -72,7 +73,7 @@ public class WordCountTest extends ClusterMapReduceTestCase
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
         FileInputFormat.addInputPath(job, new Path("file:///home/tom/sample.txt"));
-        FileOutputFormat.setOutputPath(job, new Path("blahblah"));
+        FileOutputFormat.setOutputPath(job, new Path("target/hdfstest/blahblah-" + UUID.randomUUID()));
         job.waitForCompletion(true);
     }
     

@@ -52,7 +52,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	private HiveSearchClicksService hiveSearchClicksService;
 	@Autowired
 	private OozieJobsService oozieJobsService;
-	private int searchEventsCount = 1001;
+	private int searchEventsCount = 11;
 
 	@Test
 	public void test() {

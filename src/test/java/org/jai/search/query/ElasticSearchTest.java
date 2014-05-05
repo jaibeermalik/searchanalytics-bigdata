@@ -2,7 +2,7 @@ package org.jai.search.query;
 
 import static org.junit.Assert.assertEquals;
 
-import org.jai.search.model.ElasticSearchIndexConfig;
+import org.jai.search.config.ElasticSearchIndexConfig;
 import org.jai.search.model.Product;
 import org.jai.search.model.ProductSearchResult;
 import org.jai.search.model.SearchCriteria;

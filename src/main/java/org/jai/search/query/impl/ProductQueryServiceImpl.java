@@ -2,6 +2,14 @@ package org.jai.search.query.impl;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.commons.lang.StringUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.mlt.MoreLikeThisRequestBuilder;
@@ -41,9 +49,9 @@ import org.elasticsearch.search.suggest.SuggestBuilder;
 import org.elasticsearch.search.suggest.term.TermSuggestion;
 import org.elasticsearch.search.suggest.term.TermSuggestionBuilder;
 import org.jai.search.client.SearchClientService;
+import org.jai.search.config.ElasticSearchIndexConfig;
 import org.jai.search.model.AutoSuggestionEntry;
 import org.jai.search.model.Category;
-import org.jai.search.model.ElasticSearchIndexConfig;
 import org.jai.search.model.FacetResult;
 import org.jai.search.model.FacetResultEntry;
 import org.jai.search.model.Product;
@@ -59,14 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 @Service
 public class ProductQueryServiceImpl implements ProductQueryService

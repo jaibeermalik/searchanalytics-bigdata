@@ -17,7 +17,7 @@
            http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
 
 
-	<!-- <context:annotation-config /> -->
+	<context:annotation-config />
 
 	<context:component-scan base-package="org.jai" />
 
