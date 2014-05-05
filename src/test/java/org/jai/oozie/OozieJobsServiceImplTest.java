@@ -21,6 +21,7 @@ public class OozieJobsServiceImplTest
 	public void test() throws OozieClientException, InterruptedException, IllegalArgumentException, IOException {
 		oozieJobsService = new OozieJobsServiceImpl();
 		oozieJobsService.setup();
+//		oozieJobsService.startHiveAddPartitionCoordJob();
 		//		oozieJobsService.startHiveAddPartitionCoordJob();
 //		oozieJobsService.setup();
 		// print the final status o the workflow job

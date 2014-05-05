@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.search.SearchHit;
@@ -31,6 +32,7 @@ import org.jai.oozie.OozieJobsService;
 import org.jai.search.analytics.GenerateSearchAnalyticsDataService;
 import org.jai.search.client.SearchClientService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -50,31 +52,33 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	private HiveSearchClicksService hiveSearchClicksService;
 	@Autowired
 	private OozieJobsService oozieJobsService;
-	
+	private int searchEventsCount = 1001;
+
 	@Test
 	public void test() {
 		try {
 
 			// Generate Events
-			System.out.println("Running test now!" + hadoopClusterService.getHDFSUri());
-			
+			System.out.println("Running test now!"
+					+ hadoopClusterService.getHDFSUri());
+
 			List<Event> searchEvents = generateSearchAnalyticsDataService
-					.getSearchEvents(10);
+					.getSearchEvents(searchEventsCount);
 			// Write events to file and read.
-//			hdfsFileLoggerSinkAndTest(searchEvents);
+			// hdfsFileLoggerSinkAndTest(searchEvents);
 
 			// Write events to hdfs sink and test data.
 			FlumehdfsSinkAndTestData(searchEvents);
 
 			FlumeESSinkAndTestData(searchEvents);
-			
-			TestHiveDatabase();
-			
-			startOozieAddHivePartitionJob();
-			//sleep 10 sec for partition to be added.
-			Thread.sleep(100*1000);
-			int searchClicksCount = hiveSearchClicksService.getTotalSearchClicksCount();
-			System.out.println("Search clicks count is:" + searchClicksCount);
+
+			TestHiveDatabaseSearchClicks();
+
+			// startOozieAddHivePartitionJob();
+			// sleep 10 sec for partition to be added.
+			// Thread.sleep(100*1000);
+
+			testTopCustomerQueriesWithHiveAndES();
 
 		} catch (EventDeliveryException | InterruptedException | IOException e) {
 			e.printStackTrace();
@@ -86,13 +90,70 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 		oozieJobsService.startHiveAddPartitionCoordJob();
 	}
 
-	private void TestHiveDatabase() {
+	private void TestHiveDatabaseSearchClicks() throws InterruptedException {
+		// Setup
 		hiveSearchClicksService.setup();
 		for (String dbString : hiveSearchClicksService.getDbs()) {
 			System.out.println("Db name is:" + dbString);
 			for (String TbString : hiveSearchClicksService.getTables(dbString)) {
 				System.out.println("Table name is:" + TbString);
 			}
+		}
+
+		// Add partition
+		DateTime now = new DateTime();
+		int monthOfYear = now.getMonthOfYear();
+		int dayOfMonth = now.getDayOfMonth();
+		int hourOfDay = now.getHourOfDay();
+		String year = String.valueOf(now.getYear());
+		String month = monthOfYear < 10 ? "0" + String.valueOf(monthOfYear)
+				: String.valueOf(monthOfYear);
+		String day = dayOfMonth < 10 ? "0" + String.valueOf(dayOfMonth)
+				: String.valueOf(dayOfMonth);
+		String hour = hourOfDay < 10 ? "0" + String.valueOf(hourOfDay) : String
+				.valueOf(hourOfDay);
+		String dbName = "search";
+		String tbName = "search_clicks";
+		String tbNameInternal = "search_clicks_internal";
+
+		hiveSearchClicksService.addPartition(dbName, tbName, year, month, day,
+				hour);
+		// hiveSearchClicksService.addPartition(dbName, tbNameInternal, year,
+		// month, day, hour);
+		// Thread.sleep(1000);
+		// Query Data
+		// TODO: count equal data: searchEventsCount
+		// int searchClicksCount = hiveSearchClicksService
+		// .getTotalSearchClicksCount(dbName, tbName);
+		// System.out.println("Search clicks count is:" + searchClicksCount);
+
+		hiveSearchClicksService.getSearchClicks(dbName, tbName, year, month,
+				day, hour);
+		// hiveSearchClicksService.getSearchClicks(dbName, tbNameInternal, year,
+		// month, day, hour);
+
+		// Thread.sleep(10000000);
+	}
+
+	private void testTopCustomerQueriesWithHiveAndES() {
+		hiveSearchClicksService.loadSearchCustomerQueryTable();
+
+		hiveSearchClicksService
+				.loadTopSearchCustomerQueryToElasticSearchIndex();
+
+		String indexName = "topqueries";
+		Client client = searchClientService.getClient();
+		boolean exists = client.admin().indices().prepareExists(indexName)
+				.get().isExists();
+		long totalCount = 0;
+		if (exists) {
+			totalCount = client.prepareCount(indexName).get().getCount();
+		}
+		System.out.println("Total topqueries count:" + totalCount);
+
+		for (SearchHit searchHit : client.prepareSearch(indexName)
+				.setSize(searchEventsCount).get().getHits()) {
+			System.out.println(searchHit.getSource());
 		}
 	}
 
@@ -121,7 +182,8 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 		flumeHDFSSinkService.processEvents(searchEvents);
 
 		// list all files and check data.
-		Path dirPath = new Path(hadoopClusterService.getHDFSUri() + "/searchevents");
+		Path dirPath = new Path(hadoopClusterService.getHDFSUri()
+				+ "/searchevents");
 		// FileStatus[] dirStat = fs.listStatus(dirPath);
 		// Path fList[] = FileUtil.stat2Paths(dirStat);
 
@@ -141,6 +203,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 						System.out.println("body is:" + body);
 					}
 					reader.close();
+					input.close();
 				}
 			}
 		}

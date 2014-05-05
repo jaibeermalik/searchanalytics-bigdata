@@ -49,10 +49,12 @@ public class SearchClientServiceMockImpl implements SearchClientService
         final Settings settings = settingsBuilder().put(ElasticSearchReservedWords.NUMBER_OF_SHARDS.getText(), 3)
                 .put(ElasticSearchReservedWords.NUMBER_OF_REPLICAS.getText(), 0)
                 // .put(ElasticSearchReservedWords.INDEX_MAPPER_DYNAMIC.getText(), false)
-                .put("http.enabled", false)
+                .put("http.enabled", true)
                 .put("cluster.name", "jai-testclusterName")
                 .put("node.name", "jai-eslocalnode")
                 .put("transport.tcp.port", 9310)
+                .put("http.port", 9210)
+                .put("network.host", "localhost")
                 .build();
         startNode("server1", settings);
 //        startNode("server2", settings);

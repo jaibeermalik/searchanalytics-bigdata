@@ -1,12 +1,7 @@
 <?xml version="1.0"?>
 <configuration>
-	<property>
-		<name>oozie.base.url</name>
-		<value>http://localhost:54210/oozie</value>
-		<description>
-			Base Oozie URL.
-		</description>
-	</property>
+	<!-- <property> <name>oozie.base.url</name> <value>http://localhost:54210/oozie</value> 
+		<description> Base Oozie URL. </description> </property> -->
 	<property>
 		<name>oozie.service.ActionService.executor.ext.classes</name>
 		<value>
@@ -42,7 +37,49 @@
 			System mode for Oozie at startup.
 		</description>
 	</property>
-
+	<property>
+		<name>oozie.services</name>
+		<value>
+			org.apache.oozie.service.SchedulerService,
+			org.apache.oozie.service.InstrumentationService,
+			org.apache.oozie.service.CallableQueueService,
+			org.apache.oozie.service.UUIDService,
+			org.apache.oozie.service.ELService,
+			org.apache.oozie.service.AuthorizationService,
+			org.apache.oozie.service.UserGroupInformationService,
+			org.apache.oozie.service.HadoopAccessorService,
+			org.apache.oozie.service.URIHandlerService,
+			org.apache.oozie.service.MemoryLocksService,
+			org.apache.oozie.service.DagXLogInfoService,
+			org.apache.oozie.service.SchemaService,
+			org.apache.oozie.service.LiteWorkflowAppService,
+			org.apache.oozie.service.JPAService,
+			org.apache.oozie.service.StoreService,
+			org.apache.oozie.service.CoordinatorStoreService,
+			org.apache.oozie.service.SLAStoreService,
+			org.apache.oozie.service.DBLiteWorkflowStoreService,
+			org.apache.oozie.service.CallbackService,
+			org.apache.oozie.service.ActionService,
+			org.apache.oozie.service.ShareLibService,
+			org.apache.oozie.service.ActionCheckerService,
+			org.apache.oozie.service.RecoveryService,
+			org.apache.oozie.service.PurgeService,
+			org.apache.oozie.service.CoordinatorEngineService,
+			org.apache.oozie.service.BundleEngineService,
+			org.apache.oozie.service.DagEngineService,
+			org.apache.oozie.service.CoordMaterializeTriggerService,
+			org.apache.oozie.service.StatusTransitService,
+			org.apache.oozie.service.PauseTransitService,
+			org.apache.oozie.service.GroupsService,
+			org.apache.oozie.service.ProxyUserService,
+			org.apache.oozie.service.XLogStreamingService,
+			org.apache.oozie.service.JobsConcurrencyService
+		</value>
+		<description>
+			All services to be created and managed by Oozie Services singleton.
+			Class names must be separated by commas.
+		</description>
+	</property>
 	<property>
 		<name>oozie.service.AuthorizationService.security.enabled</name>
 		<value>false</value>
@@ -53,7 +90,14 @@
 			manage any job.
 		</description>
 	</property>
-
+	<property>
+		<name>oozie.service.EventHandlerService.filter.app.types</name>
+		<value>workflow_job, coordinator_action</value>
+		<description>
+			The app-types among workflow/coordinator/bundle job/action for which
+			for which events system is enabled.
+		</description>
+	</property>
 	<property>
 		<name>oozie.service.PurgeService.older.than</name>
 		<value>30</value>

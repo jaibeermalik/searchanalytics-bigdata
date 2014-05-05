@@ -78,4 +78,9 @@
 	<!-- sends logs to logback-beagle 
 	<consolePlugin /> -->
 
+	<!-- 	
+	<logger name="org.springframework.data.hadoop.hive.HiveTemplate">
+		<level value="DEBUG" />
+	</logger>
+	 -->
 </configuration>

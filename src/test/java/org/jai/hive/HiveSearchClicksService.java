@@ -10,5 +10,14 @@ public interface HiveSearchClicksService {
 	
 	void setup();
 
-	int getTotalSearchClicksCount();
+	int getTotalSearchClicksCount(String dbName, String tbName);
+	
+	void addPartition(String dbName, String tbName, String year, String month, String day, String hour);
+
+	void getSearchClicks(String dbName, String tbName, String year,
+			String month, String day, String hour);
+
+	void loadSearchCustomerQueryTable();
+
+	void loadTopSearchCustomerQueryToElasticSearchIndex();
 }

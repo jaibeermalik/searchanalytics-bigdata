@@ -13,3 +13,4 @@ build/
 metastore_db
 hive
 userlogs
+TempStatsStore

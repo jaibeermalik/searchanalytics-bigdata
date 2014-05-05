@@ -2,15 +2,19 @@ package org.jai.hive;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.service.HiveClient;
+import org.jai.hadoop.hdfs.HadoopClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.hadoop.hive.HiveClientCallback;
 import org.springframework.data.hadoop.hive.HiveRunner;
 import org.springframework.data.hadoop.hive.HiveScript;
+import org.springframework.data.hadoop.hive.HiveTasklet;
 import org.springframework.data.hadoop.hive.HiveTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -22,10 +26,13 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 	private HiveTemplate hiveTemplate;
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
-	
+	@Autowired
+	private HadoopClusterService hadoopClusterService;
 
 	@Autowired
 	private HiveRunner hiveRunner;
+	@Autowired
+	private HiveTasklet hiveTasklet;
 
 	// private JdbcTemplate template;
 
@@ -51,10 +58,11 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 		});
 	}
 
-	private void setupSearchClicksExternalTable() {
+	private void setupSearchClicksTable() {
 		try {
 			Collection<HiveScript> scripts = new ArrayList<>();
-			HiveScript script = new HiveScript(new ClassPathResource("hive/create-searchevents-externaltable.q"));
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/create-searchevents-table.q"));
 			scripts.add(script);
 			hiveRunner.setScripts(scripts);
 			hiveRunner.call();
@@ -68,7 +76,8 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 	private void setupSearchDatabase() {
 		try {
 			Collection<HiveScript> scripts = new ArrayList<>();
-			HiveScript script = new HiveScript(new ClassPathResource("hive/drop-create-search-database.q"));
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/drop-create-search-database.q"));
 			scripts.add(script);
 			hiveRunner.setScripts(scripts);
 			hiveRunner.call();
@@ -77,48 +86,130 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 			throw new RuntimeException(
 					"Failed to setup search_clicks table in hive!", e);
 		}
-//		hiveTemplate.execute(new HiveClientCallback<Database>() {
-//			@Override
-//			public Database doInHive(HiveClient hiveClient)
-//					throws Exception {
-//				String dbName = "search";
-//				hiveClient.drop_database(dbName, true, true);
-//				Database database = new Database();
-//				database.setName(dbName);
-//				hiveClient.create_database(database);
-//				return database;
-//			}
-//		});
 	}
-	
+
 	@Override
-	public int getTotalSearchClicksCount() {
-//		Integer queryForObject = jdbcTemplate.queryForObject("select count(*) from search.search_clicks", Integer.class);
-//		return queryForObject;
+	public void addPartition(final String dbName, final String tbName,
+			final String year, final String month, final String day,
+			final String hour) {
+		try {
+			Collection<HiveScript> scripts = new ArrayList<>();
+			Map<String, String> args = new HashMap<>();
+			args.put("DBNAME", dbName);
+			args.put("TBNAME", tbName);
+			args.put("YEAR", year);
+			args.put("MONTH", month);
+			args.put("DAY", day);
+			args.put("HOUR", hour);
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/add_partition_searchevents.q"), args);
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			hiveRunner.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+					"Failed to setup search_clicks table in hive!", e);
+		}
 		hiveTemplate.execute(new HiveClientCallback<Integer>() {
 			@Override
-			public Integer doInHive(HiveClient hiveClient)
-					throws Exception {
-				List<Partition> get_partitions = hiveClient.get_partitions("search", "search_clicks", Short.MAX_VALUE);
-				for (Partition partition : get_partitions) {
-					System.out.println("par: " + partition.getCreateTime());
+			public Integer doInHive(HiveClient hiveClient) throws Exception {
+				List<Partition> get_partitions = hiveClient.get_partitions(
+						dbName, tbName, Short.MAX_VALUE);
+				for (Partition partition1 : get_partitions) {
+					System.out.println("par: " + partition1.getTableName());
+					System.out.println("par: " + partition1.getCreateTime());
+					System.out.println("par: " + partition1.getSd().getLocation());
+					System.out.println("par: " + partition1.getValuesSize());
+					System.out.println("par: " + partition1.getValues());
 				}
 				return 0;
 			}
 		});
+	}
+	
+	@Override
+	public void getSearchClicks(String dbName, String tbName, String year,
+			String month, String day, String hour) {
+		try {
+			Collection<HiveScript> scripts = new ArrayList<>();
+			Map<String, String> args = new HashMap<>();
+			args.put("DBNAME", dbName);
+			args.put("TBNAME", tbName);
+			args.put("YEAR", year);
+			args.put("MONTH", month);
+			args.put("DAY", day);
+			args.put("HOUR", hour);
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/get_searchevents.q"), args);
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			List<String> call = hiveRunner.call();
+			for (String string : call) {
+				System.out.println("val is: " +string);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+					"Failed to setup search_clicks table in hive!", e);
+		}
+	}
+
+	@Override
+	public void loadSearchCustomerQueryTable() {
+		try {
+			//Load last one month top queries per customer.
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/load-search_customerquery-table.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			List<String> call = hiveRunner.call();
+			for (String string : call) {
+				System.out.println("val is: " +string);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+					"Failed to loadSearchCustomerQueryTable in hive!", e);
+		}
+	}
+	
+	@Override
+	public void loadTopSearchCustomerQueryToElasticSearchIndex() {
+		try {
+			//Load last one month top queries per customer.
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/load-search_customerquery_to_es.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			List<String> call = hiveRunner.call();
+			for (String string : call) {
+				System.out.println("val is: " +string);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+					"Failed to loadTopSearchCustomerQueryToElasticSearchIndex in hive!", e);
+		}
+	}
+	
+	@Override
+	//TODO: find how to work it.
+	public int getTotalSearchClicksCount(final String dbName, final String tbName) {
 		return hiveTemplate.execute(new HiveClientCallback<Integer>() {
 			@Override
-			public Integer doInHive(HiveClient hiveClient)
-					throws Exception {
+			public Integer doInHive(HiveClient hiveClient) throws Exception {
 				return hiveClient.fetchAll().size();
 			}
 		});
 	}
-	
+
 	@Override
 	public void setup() {
 		setupSearchDatabase();
-		setupSearchClicksExternalTable();
+		setupSearchClicksTable();
 	}
 
 }
