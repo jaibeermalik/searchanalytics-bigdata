@@ -15,6 +15,7 @@ import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.elasticsearch.ElasticSearchSink;
 import org.apache.flume.sink.elasticsearch.ElasticSearchSinkConstants;
+import org.jai.flume.sinks.elasticsearch.serializer.ElasticSearchJsonBodyEventSerializer;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -80,8 +81,8 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 				"jai-testclusterName");
 		paramters.put(ElasticSearchSinkConstants.BATCH_SIZE, "10");
 		paramters
-				.put(ElasticSearchSinkConstants.SERIALIZER,
-						"org.jai.flume.sinks.elasticsearch.serializer.ElasticSearchJsonBodyEventSerializer");
+				.put(ElasticSearchSinkConstants.SERIALIZER,ElasticSearchJsonBodyEventSerializer.class.getName());
+//						"org.jai.flume.sinks.elasticsearch.serializer.ElasticSearchJsonBodyEventSerializer");
 
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);

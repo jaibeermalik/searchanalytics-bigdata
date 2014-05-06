@@ -1,4 +1,4 @@
-package org.jai.hadoop.hdfs;
+package org.jai.hadoop;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
 import org.springframework.stereotype.Service;
 
@@ -110,9 +109,8 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		configuration.set("mapreduce.jobhistory.webapp.address", "localhost.localdomain:54312");
 		configuration.set("mapred.job.tracker.http.address", "localhost.localdomain:54313");
 		configuration.set("mapred.task.tracker.http.address", "localhost.localdomain:54314");
-		configuration.set("mapred.task.tracker.http.address", "localhost.localdomain:54314");
 		configuration.set("mapreduce.task.tmp.dir", new File("target/mapredtaskdir").getAbsolutePath());
-//		configuration.set("hadoop.job.history.location", "none");
+		configuration.set("hadoop.job.history.location", "none");
 		configuration.set("hadoop.log.dir", new File("target/logs").getAbsolutePath());
 		
 		//Job history won't start NPE
@@ -123,7 +121,6 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		System.setProperty("mapreduce.jobhistory.address", "localhost.localdomain:54311");
 		System.setProperty("mapreduce.jobhistory.webapp.address", "localhost.localdomain:54312");
 		System.setProperty("mapred.job.tracker.http.address", "localhost.localdomain:54313");
-		System.setProperty("mapred.task.tracker.http.address", "localhost.localdomain:54314");
 		System.setProperty("mapred.task.tracker.http.address", "localhost.localdomain:54314");
 		System.setProperty("mapreduce.task.tmp.dir", new File("target/mapredtaskdir").getAbsolutePath());
 		System.setProperty("hadoop.job.history.location", "none");

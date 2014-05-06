@@ -2,8 +2,10 @@ package org.jai.search.client.impl;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
-import static org.elasticsearch.common.settings.ImmutableSettings.Builder.EMPTY_SETTINGS;
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
+
+import java.io.File;
+import java.util.Map;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.network.NetworkUtils;
@@ -13,11 +15,6 @@ import org.elasticsearch.node.Node;
 import org.jai.search.client.SearchClientService;
 import org.jai.search.model.ElasticSearchReservedWords;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 @Service(value = "searchClientService")
 public class SearchClientServiceMockImpl implements SearchClientService
@@ -42,8 +39,22 @@ public class SearchClientServiceMockImpl implements SearchClientService
             // Check how to set memory setting and allocations in memory store type.
             .put("index.store.type", "memory").build();
 
-    @PostConstruct
-    public void createNodes() throws Exception
+    @Override
+    public void setup() {
+    	try {
+			createNodes();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Error occured while starting ES server!",e);
+		}
+    }
+    
+    @Override
+    public void shutdown() {
+    	closeNodes();	
+    }
+    
+    private void createNodes() throws Exception
     {
         //zero replicas on single server test node
         final Settings settings = settingsBuilder().put(ElasticSearchReservedWords.NUMBER_OF_SHARDS.getText(), 3)
@@ -60,8 +71,7 @@ public class SearchClientServiceMockImpl implements SearchClientService
 //        startNode("server2", settings);
     }
 
-    // @PreDestroy
-    public void closeNodes()
+    private void closeNodes()
     {
         getClient().close();
         closeAllNodes();
@@ -78,57 +88,12 @@ public class SearchClientServiceMockImpl implements SearchClientService
         return nodes.get(nodeName);
     }
 
-    // @Override
-    @Override
-    public void addNewNode(final String name)
-    {
-        buildNode(name);
-        startNode(name);
-    }
-
-    // @Override
-    @Override
-    public void removeNode(final String nodeName)
-    {
-        closeNode(nodeName);
-    }
-
-    public void putDefaultSettings(final Settings.Builder settings)
-    {
-        putDefaultSettings(settings.build());
-    }
-
-    public void putDefaultSettings(final Settings settings)
-    {
-        defaultSettings = ImmutableSettings.settingsBuilder().put(defaultSettings).put(settings).build();
-    }
-
-    public Node startNode(final String id)
-    {
-        return buildNode(id).start();
-    }
-
-    public Node startNode(final String id, final Settings.Builder settings)
-    {
-        return startNode(id, settings.build());
-    }
-
-    public Node startNode(final String id, final Settings settings)
+    private Node startNode(final String id, final Settings settings)
     {
         return buildNode(id, settings).start();
     }
 
-    public Node buildNode(final String id)
-    {
-        return buildNode(id, EMPTY_SETTINGS);
-    }
-
-    public Node buildNode(final String id, final Settings.Builder settings)
-    {
-        return buildNode(id, settings.build());
-    }
-
-    public Node buildNode(final String id, final Settings settings)
+    private Node buildNode(final String id, final Settings settings)
     {
         final String settingsSource = getClass().getName().replace('.', '/') + ".yml";
         Settings finalSettings = settingsBuilder().loadFromClasspath(settingsSource).put(defaultSettings).put(settings).put("name", id)
@@ -149,31 +114,12 @@ public class SearchClientServiceMockImpl implements SearchClientService
         return node;
     }
 
-    public void closeNode(final String id)
-    {
-        final Client client = clients.remove(id);
-        if (client != null)
-        {
-            client.close();
-        }
-        final Node node = nodes.remove(id);
-        if (node != null)
-        {
-            node.close();
-        }
-    }
-
-    public Node node(final String id)
-    {
-        return nodes.get(id);
-    }
-
-    public Client client(final String id)
+    private Client client(final String id)
     {
         return clients.get(id);
     }
 
-    public void closeAllNodes()
+    private void closeAllNodes()
     {
         for (final Client client : clients.values())
         {

@@ -14,7 +14,7 @@ import org.apache.flume.Transaction;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.hdfs.HDFSEventSink;
-import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.jai.hadoop.HadoopClusterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -14,15 +14,10 @@
         	<data-in name="input" dataset="searchevents">
                 	<instance>${coord:current(coord:tzOffset() / 60)}</instance>
                 </data-in>
-                <!--
-                <data-in name="readyIndicator" dataset="searchevents">
-                <instance>${coord:current(1 + (coord:tzOffset() / 60))}</instance>
-                </data-in>
-                -->
          </input-events>
          <action>
          	<workflow>
-                	<app-path>${workflowRoot}/hive-action.xml</app-path>
+                	<app-path>${workflowRoot}/hive-action-add-partition.xml</app-path>
                         <configuration>
 		                <property>
 		                	<name>wfInput</name>
@@ -44,12 +39,6 @@
 					<name>HOUR</name>
 					<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'HH')}</value>
 				</property>
-				<!--				
-				<property>
-					<name>dateHour</name>
-					<value>${coord:formatTime(coord:dateOffset(coord:nominalTime(), tzOffset, 'HOUR'), 'yyyyMMddHH')}</value>
-				</property>
-				-->
 			</configuration>
 		</workflow>
 	</action>

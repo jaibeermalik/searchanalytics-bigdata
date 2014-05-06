@@ -16,9 +16,7 @@ public interface SearchClientService
      */
     Client getClient();
 
-    void addNewNode(String name);
-
-    void removeNode(String nodeName);
+    void setup();
     
-    Node getNode(String name);
+    void shutdown();
 }

@@ -1,0 +1,15 @@
+<coordinator-app name="CoordApp-IndexTopQueriesES"
+	frequency="${coord:days(1)}" start="${jobStartIndex}" end="${jobEnd}"
+	timezone="UTC" xmlns="uri:oozie:coordinator:0.2">
+	<controls>
+		<timeout>1</timeout>
+		<concurrency>1</concurrency>
+		<execution>FIFO</execution>
+	</controls>
+	<action>
+		<workflow>
+			<app-path>${workflowRoot}/hive-action-index-es-topqueries.xml
+			</app-path>
+		</workflow>
+	</action>
+</coordinator-app>

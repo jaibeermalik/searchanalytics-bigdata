@@ -5,8 +5,8 @@
             <job-tracker>${jobTracker}</job-tracker>
                   <name-node>${nameNode}</name-node>
                         <prepare>
-                                <delete path="${workflowRoot}/output-data/hive"/>
-                                <mkdir path="${workflowRoot}/output-data"/>
+                                <delete path="${workflowRoot}/output"/>
+                                <mkdir path="${workflowRoot}/output"/>
                         </prepare>
                         <job-xml>${workflowRoot}/hive-site.xml</job-xml>
                         <configuration>
@@ -17,7 +17,6 @@
                         </configuration>
                         <script>add_partition_hive_searchevents_script.q</script>
                         <param>WFINPUT=${wfInput}</param>
-                        <!-- <param>DATEHOUR=${dateHour}</param> -->
                         <param>YEAR=${YEAR}</param>
                         <param>MONTH=${MONTH}</param>
                         <param>DAY=${DAY}</param>

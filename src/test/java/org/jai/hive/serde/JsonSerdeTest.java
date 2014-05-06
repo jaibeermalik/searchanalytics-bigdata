@@ -11,7 +11,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaIntObjectInspector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.jai.hive.serde.JsonSerde;
+import org.jai.hive.serde.JSONSerDe;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +19,7 @@ import java.util.Properties;
 
 public class JsonSerdeTest
 {
-    JsonSerde jsonSerde = new JsonSerde();
+    JSONSerDe jsonSerde = new JSONSerDe();
 
     @Before
     public void initialize() throws Exception

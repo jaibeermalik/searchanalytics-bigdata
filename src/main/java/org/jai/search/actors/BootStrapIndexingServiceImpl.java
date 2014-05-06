@@ -2,7 +2,6 @@ package org.jai.search.actors;
 
 import org.jai.search.data.SampleDataGeneratorService;
 import org.jai.search.setup.SetupIndexService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +53,7 @@ public class BootStrapIndexingServiceImpl implements BootStrapIndexService
         catch (final Exception e)
         {
             logger.debug("Index setup status check, Failed getting result: " + e.getMessage());
+            throw new RuntimeException("Error occured while setting up search index!",e);
         }
         logger.debug("All indexing setup finished using Akka system, Enjoy!");
     }

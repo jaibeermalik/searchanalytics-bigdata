@@ -1,7 +1,7 @@
 package org.jai.search.test;
 
 import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.fail;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.client.Client;
@@ -44,19 +44,14 @@ public abstract class AbstractSearchJUnit4SpringContextTests extends AbstractJUn
      @Before
      public void prepare()
      {
-//         setupIndexService.setupAllIndices(false);
-    	 bootStrapIndexService.preparingIndexes();
-         
-         //Sleep for 10 sec for akka workers to finish.
-//         try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+         try {
+        	 bootStrapIndexService.preparingIndexes();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
          
          searchClientService.getClient().admin().indices().refresh(Requests.refreshRequest()).actionGet();
-
          System.out.println("yes, test setup indexing preparation done!");
      }
      

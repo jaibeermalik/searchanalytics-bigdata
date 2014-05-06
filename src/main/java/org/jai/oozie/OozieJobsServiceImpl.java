@@ -23,7 +23,7 @@ import org.apache.oozie.local.LocalOozie;
 import org.apache.oozie.service.Services;
 import org.apache.oozie.test.EmbeddedServletContainer;
 import org.apache.oozie.util.DateUtils;
-import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.jai.hadoop.HadoopClusterService;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;

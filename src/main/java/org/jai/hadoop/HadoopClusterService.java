@@ -1,4 +1,4 @@
-package org.jai.hadoop.hdfs;
+package org.jai.hadoop;
 
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 

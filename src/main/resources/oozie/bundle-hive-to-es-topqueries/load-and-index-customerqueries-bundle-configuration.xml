@@ -1,0 +1,11 @@
+<bundle-app name='BundleApp-LoadAndIndexTopCustomerQueries' xmlns='uri:oozie:bundle:0.2'>
+	<controls>
+		<kick-off-time>${jobStart}</kick-off-time>
+	</controls>
+	<coordinator name='CoordApp-LoadCustomerQueries' >
+		<app-path>${coordAppPathLoadCustomerQueries}</app-path>
+	</coordinator>
+	<coordinator name='CoordApp-IndexTopQueriesES' >
+		<app-path>${coordAppPathIndexTopQueriesES}</app-path>
+	</coordinator>
+</bundle-app> 

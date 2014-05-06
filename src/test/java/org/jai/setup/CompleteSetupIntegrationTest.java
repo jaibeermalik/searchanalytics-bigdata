@@ -1,4 +1,4 @@
-package org.jai.hadoop.example;
+package org.jai.setup;
 
 import static org.junit.Assert.fail;
 
@@ -8,25 +8,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
 import org.apache.flume.sink.elasticsearch.ElasticSearchIndexRequestBuilderFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
-import org.jai.hadoop.hdfs.HadoopClusterService;
+import org.jai.hadoop.HadoopClusterService;
 import org.jai.hive.HiveSearchClicksService;
 import org.jai.oozie.OozieJobsService;
 import org.jai.search.analytics.GenerateSearchAnalyticsDataService;
@@ -36,7 +33,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests {
+public class CompleteSetupIntegrationTest extends AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
@@ -59,13 +56,9 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 		try {
 
 			// Generate Events
-			System.out.println("Running test now!"
-					+ hadoopClusterService.getHDFSUri());
 
 			List<Event> searchEvents = generateSearchAnalyticsDataService
 					.getSearchEvents(searchEventsCount);
-			// Write events to file and read.
-			// hdfsFileLoggerSinkAndTest(searchEvents);
 
 			// Write events to hdfs sink and test data.
 			FlumehdfsSinkAndTestData(searchEvents);
@@ -74,7 +67,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 
 			TestHiveDatabaseSearchClicks();
 
-			// startOozieAddHivePartitionJob();
+			 startOozieAddHivePartitionJob();
 			// sleep 10 sec for partition to be added.
 			// Thread.sleep(100*1000);
 
@@ -87,7 +80,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 	}
 
 	private void startOozieAddHivePartitionJob() {
-		oozieJobsService.startHiveAddPartitionCoordJob();
+//		oozieJobsService.startHiveAddPartitionCoordJob();
 	}
 
 	private void TestHiveDatabaseSearchClicks() throws InterruptedException {
@@ -114,7 +107,7 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 				.valueOf(hourOfDay);
 		String dbName = "search";
 		String tbName = "search_clicks";
-		String tbNameInternal = "search_clicks_internal";
+//		String tbNameInternal = "search_clicks_internal";
 
 		hiveSearchClicksService.addPartition(dbName, tbName, year, month, day,
 				hour);
@@ -207,36 +200,6 @@ public class WriteDataToFileTest extends AbstractSearchJUnit4SpringContextTests 
 				}
 			}
 		}
-	}
-
-	private void hdfsFileLoggerSinkAndTest(List<Event> searchEvents)
-			throws FileNotFoundException, IOException {
-
-		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
-
-		// /Write to file
-		Path outFile = new Path("/searchevents/event" + UUID.randomUUID());
-		FSDataOutputStream out = fs.create(outFile, false);
-		for (Event event : searchEvents) {
-			String eventString = new String(event.getBody(), "UTF-8");
-			System.out.println("Writing event string: " + eventString);
-			out.writeUTF(eventString + System.lineSeparator());
-		}
-		out.flush();
-		out.close();
-
-		// check the data is there...with standard file
-		FSDataInputStream input = fs.open(outFile);
-		try (BufferedReader br = new BufferedReader(new InputStreamReader(
-				input, "UTF-8"))) {
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				System.out.println("HDFS file line is:" + line);
-			}
-		}
-
-		input.close();
-		fs.delete(outFile, true);
 	}
 
 }

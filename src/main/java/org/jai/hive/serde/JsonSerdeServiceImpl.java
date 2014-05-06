@@ -34,7 +34,7 @@ public class JsonSerdeServiceImpl implements JsonSerdeService {
 			FileOutputStream fileOutputStream = new FileOutputStream(
 					jarFile);
 			JarOutputStream target = new JarOutputStream(fileOutputStream, manifest);
-			addFile(new File("./target/classes/"), target, JsonSerde.class);
+			addFile(new File("./target/classes/"), target, JSONSerDe.class);
 			target.close();
 			return jarFile.getAbsolutePath();
 		} catch (IOException e) {
@@ -43,6 +43,7 @@ public class JsonSerdeServiceImpl implements JsonSerdeService {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void addFile(File source, JarOutputStream target, Class clazz) throws IOException
 	{
 	  BufferedInputStream in = null;

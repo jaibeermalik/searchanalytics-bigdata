@@ -13,6 +13,5 @@ public interface GenerateSearchAnalyticsDataService
     void generateAndPushSearchEvents(int numberOfEvents) throws UnknownHostException, JsonProcessingException, EventDeliveryException,
             InterruptedException;
     
-    List<Event> getSearchEvents(int numberOfEvents) throws UnknownHostException, JsonProcessingException, EventDeliveryException,
-    InterruptedException;
+    List<Event> getSearchEvents(int numberOfEvents);
 }

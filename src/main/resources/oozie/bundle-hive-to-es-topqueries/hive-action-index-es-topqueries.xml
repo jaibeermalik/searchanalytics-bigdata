@@ -1,0 +1,29 @@
+<workflow-app xmlns="uri:oozie:workflow:0.3" name="hive-index-topqueries-es-wf">
+	<start to="hive-index-topqueries-es" />
+	<action name="hive-index-topqueries-es" retry-max="2"
+		retry-interval="1">
+		<hive xmlns="uri:oozie:hive-action:0.3">
+			<job-tracker>${jobTracker}</job-tracker>
+			<name-node>${nameNode}</name-node>
+			<prepare>
+				<delete path="${workflowRoot}/output" />
+				<mkdir path="${workflowRoot}/output" />
+			</prepare>
+			<job-xml>${oozieWorkflowRoot}/hive-site.xml</job-xml>
+			<configuration>
+				<property>
+					<name>oozie.hive.defaults</name>
+					<value>${oozieWorkflowRoot}/hive-site.xml</value>
+				</property>
+			</configuration>
+			<script>index_es_customer_queries_topqueries.q</script>
+		</hive>
+		<ok to="end" />
+		<error to="fail" />
+	</action>
+	<kill name="fail">
+		<message>Hive failed, error
+			message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+	</kill>
+	<end name="end" />
+</workflow-app>
