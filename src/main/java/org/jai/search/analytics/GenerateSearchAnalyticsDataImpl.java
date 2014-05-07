@@ -70,8 +70,8 @@ public class GenerateSearchAnalyticsDataImpl implements
 				final Event event = getJsonEvent(searchQueryInstruction);
 				flumeAgentService.getFlumeAgent().put(event);
 			}
-			
-//			flumeAgentService.processAllEvents();
+
+			// flumeAgentService.processAllEvents();
 			// ObjectMapper mapper = new ObjectMapper();
 			// for (Product product : searchProducts.getProducts())
 			// {
@@ -83,7 +83,8 @@ public class GenerateSearchAnalyticsDataImpl implements
 			// wait for 5 sec before all events are submitted...in test case
 			// agent
 			// is destroyed.
-			System.out.println("Sleeping for 5 sec to wait for search events to be processed!");
+			System.out
+					.println("Sleeping for 5 sec to wait for search events to be processed!");
 			Thread.sleep(5000);
 			flumeAgentService.processAllEvents();
 		} catch (Exception e) {

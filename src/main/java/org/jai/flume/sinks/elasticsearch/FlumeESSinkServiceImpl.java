@@ -73,7 +73,7 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 	public Channel getChannel() {
 		return channel;
 	}
-	
+
 	private void createSink() {
 		sink = new ElasticSearchSink();
 		sink.setName("ElasticSearchSink-" + UUID.randomUUID());

@@ -9,18 +9,16 @@ import org.jai.search.config.ElasticSearchIndexConfig;
  * 
  */
 @SuppressWarnings("serial")
-public class IndexingException extends Exception
-{
-    private final ElasticSearchIndexConfig indexConfig;
+public class IndexingException extends Exception {
+	private final ElasticSearchIndexConfig indexConfig;
 
-    public IndexingException(final ElasticSearchIndexConfig config, final String s, final Throwable throwable)
-    {
-        super(s, throwable);
-        this.indexConfig = config;
-    }
+	public IndexingException(final ElasticSearchIndexConfig config,
+			final String s, final Throwable throwable) {
+		super(s, throwable);
+		this.indexConfig = config;
+	}
 
-    public ElasticSearchIndexConfig getIndexConfig()
-    {
-        return indexConfig;
-    }
+	public ElasticSearchIndexConfig getIndexConfig() {
+		return indexConfig;
+	}
 }

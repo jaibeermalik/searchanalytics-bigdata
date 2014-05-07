@@ -19,12 +19,12 @@ public class OozieJobsServiceImplTest extends
 	@Test
 	public void test() throws OozieClientException, InterruptedException,
 			IllegalArgumentException, IOException {
-//		oozieJobsService.setup();
+		// oozieJobsService.setup();
 		// oozieJobsService.startHiveAddPartitionCoordJob();
 		// oozieJobsService.startHiveAddPartitionCoordJob();
 		// oozieJobsService.setup();
 		// print the final status o the workflow job
 		System.out.println("Workflow job completed ...");
-//		oozieJobsService.shutdown();
+		// oozieJobsService.shutdown();
 	}
 }

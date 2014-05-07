@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
-	
+
 	private static final Logger LOG = LoggerFactory
 			.getLogger(FlumeHDFSSinkServiceImpl.class);
 
@@ -47,14 +47,14 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 			int to = (i == batches) ? events.size() : from + batchSize;
 			for (Event event : events.subList(from, to)) {
 				channel.put(event);
-				LOG.debug("Putting event to channel: {}",event);
+				LOG.debug("Putting event to channel: {}", event);
 			}
 			txn.commit();
 			txn.close();
 			try {
 				sink.process();
 			} catch (EventDeliveryException e) {
-				LOG.error("Error processing events!",e);
+				LOG.error("Error processing events!", e);
 				throw new RuntimeException("Error processing events!", e);
 			}
 		}
@@ -75,7 +75,7 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 	public Channel getChannel() {
 		return channel;
 	}
-	
+
 	private void createSink() {
 		sink = new HDFSEventSink();
 		sink.setName("HDFSEventSink-" + UUID.randomUUID());

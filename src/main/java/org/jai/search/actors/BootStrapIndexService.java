@@ -1,6 +1,5 @@
 package org.jai.search.actors;
 
-public interface BootStrapIndexService
-{
-    void preparingIndexes();
+public interface BootStrapIndexService {
+	void preparingIndexes();
 }

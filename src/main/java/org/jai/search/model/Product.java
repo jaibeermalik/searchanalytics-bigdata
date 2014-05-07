@@ -1,172 +1,145 @@
 package org.jai.search.model;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Product
-{
-    private Long id;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-    private String title;
+public class Product {
+	private Long id;
 
-    private String description;
+	private String title;
 
-    private BigDecimal price;
+	private String description;
 
-    private boolean soldOut;
+	private BigDecimal price;
 
-    private Date availableOn;
+	private boolean soldOut;
 
-    private float boostFactor = 1.0f;
+	private Date availableOn;
 
-    private List<String> keywords = new ArrayList<String>();
+	private float boostFactor = 1.0f;
 
-    private final List<Category> categories = new ArrayList<Category>();
+	private List<String> keywords = new ArrayList<String>();
 
-    private final List<ProductProperty> productProperties = new ArrayList<ProductProperty>();
+	private final List<Category> categories = new ArrayList<Category>();
 
-    private List<Specification> specifications = new ArrayList<Specification>();
+	private final List<ProductProperty> productProperties = new ArrayList<ProductProperty>();
 
-    public Long getId()
-    {
-        return id;
-    }
+	private List<Specification> specifications = new ArrayList<Specification>();
 
-    public void setId(final Long id)
-    {
-        this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getTitle()
-    {
-        return title;
-    }
+	public void setId(final Long id) {
+		this.id = id;
+	}
 
-    public void setTitle(final String title)
-    {
-        this.title = title;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public String getDescription()
-    {
-        return description;
-    }
+	public void setTitle(final String title) {
+		this.title = title;
+	}
 
-    public void setDescription(final String description)
-    {
-        this.description = description;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public List<String> getKeywords()
-    {
-        return keywords;
-    }
+	public void setDescription(final String description) {
+		this.description = description;
+	}
 
-    public void setKeywords(final List<String> keywords)
-    {
-        this.keywords = keywords;
-    }
+	public List<String> getKeywords() {
+		return keywords;
+	}
 
-    public BigDecimal getPrice()
-    {
-        return price;
-    }
+	public void setKeywords(final List<String> keywords) {
+		this.keywords = keywords;
+	}
 
-    public void setPrice(final BigDecimal price)
-    {
-        this.price = price;
-    }
+	public BigDecimal getPrice() {
+		return price;
+	}
 
-    public boolean isSoldOut()
-    {
-        return soldOut;
-    }
+	public void setPrice(final BigDecimal price) {
+		this.price = price;
+	}
 
-    public void setSoldOut(final boolean soldOut)
-    {
-        this.soldOut = soldOut;
-    }
+	public boolean isSoldOut() {
+		return soldOut;
+	}
 
-    public Date getAvailableOn()
-    {
-        return availableOn;
-    }
+	public void setSoldOut(final boolean soldOut) {
+		this.soldOut = soldOut;
+	}
 
-    public void setAvailableOn(final Date availableOn)
-    {
-        this.availableOn = availableOn;
-    }
+	public Date getAvailableOn() {
+		return availableOn;
+	}
 
-    public void addKeyword(final String keyword)
-    {
-        keywords.add(keyword);
-    }
+	public void setAvailableOn(final Date availableOn) {
+		this.availableOn = availableOn;
+	}
 
-    public float getBoostFactor()
-    {
-        return boostFactor;
-    }
+	public void addKeyword(final String keyword) {
+		keywords.add(keyword);
+	}
 
-    public void setBoostFactor(final float boostFactor)
-    {
-        this.boostFactor = boostFactor;
-    }
+	public float getBoostFactor() {
+		return boostFactor;
+	}
 
-    public void addCategory(final Category category)
-    {
-        categories.add(category);
-    }
+	public void setBoostFactor(final float boostFactor) {
+		this.boostFactor = boostFactor;
+	}
 
-    public List<Category> getCategories()
-    {
-        return categories;
-    }
+	public void addCategory(final Category category) {
+		categories.add(category);
+	}
 
-    @Override
-    public String toString()
-    {
-        return new ToStringBuilder(this).append(id).append(title).append(description).append(price).append(soldOut).append(availableOn)
-                .append(keywords).append(boostFactor).append(categories).toString();
-    }
+	public List<Category> getCategories() {
+		return categories;
+	}
 
-    public List<ProductProperty> getProductProperties()
-    {
-        return productProperties;
-    }
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append(id).append(title)
+				.append(description).append(price).append(soldOut)
+				.append(availableOn).append(keywords).append(boostFactor)
+				.append(categories).toString();
+	}
 
-    public void addProductProperty(final ProductProperty productProperty)
-    {
-        productProperties.add(productProperty);
-    }
+	public List<ProductProperty> getProductProperties() {
+		return productProperties;
+	}
 
-    public List<Specification> getSpecifications()
-    {
-        return specifications;
-    }
+	public void addProductProperty(final ProductProperty productProperty) {
+		productProperties.add(productProperty);
+	}
 
-    public void setSpecifications(final List<Specification> specifications)
-    {
-        this.specifications = specifications;
-    }
+	public List<Specification> getSpecifications() {
+		return specifications;
+	}
 
-    public void addSpecification(final Specification specification)
-    {
-        specifications.add(specification);
-    }
+	public void setSpecifications(final List<Specification> specifications) {
+		this.specifications = specifications;
+	}
 
-    public boolean categoryNameExists(final String catName)
-    {
-        for (final Category category : categories)
-        {
-            if (category.getName().equals(catName))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+	public void addSpecification(final Specification specification) {
+		specifications.add(specification);
+	}
+
+	public boolean categoryNameExists(final String catName) {
+		for (final Category category : categories) {
+			if (category.getName().equals(catName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

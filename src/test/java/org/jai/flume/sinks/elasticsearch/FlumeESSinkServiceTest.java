@@ -14,19 +14,20 @@ import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FlumeESSinkServiceTest extends AbstractSearchJUnit4SpringContextTests{
+public class FlumeESSinkServiceTest extends
+		AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
 	@Autowired
 	private FlumeESSinkService flumeESSinkService;
-	
+
 	@Test
 	public void testProcessEvents() {
 		int searchEventsCount = 101;
 		List<Event> searchEvents = generateSearchAnalyticsDataService
 				.getSearchEvents(searchEventsCount);
-		
+
 		flumeESSinkService.processEvents(searchEvents);
 
 		Client client = searchClientService.getClient();
@@ -42,7 +43,7 @@ public class FlumeESSinkServiceTest extends AbstractSearchJUnit4SpringContextTes
 		for (SearchHit searchHit : hits) {
 			System.out.println(searchHit.getSource());
 		}
-		
+
 	}
 
 }

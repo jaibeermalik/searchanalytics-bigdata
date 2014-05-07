@@ -20,13 +20,14 @@ import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class HadoopClusterServiceTest extends AbstractSearchJUnit4SpringContextTests {
+public class HadoopClusterServiceTest extends
+		AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private HadoopClusterService hadoopClusterService;
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
-	
+
 	@Test
 	public void testGetFileSystem() {
 		assertNotNull(hadoopClusterService.getFileSystem());
@@ -34,21 +35,23 @@ public class HadoopClusterServiceTest extends AbstractSearchJUnit4SpringContextT
 
 	@Test
 	public void testGetHDFSUri() {
-		assertEquals("hdfs://localhost.localdomain:54321", hadoopClusterService.getHDFSUri());
+		assertEquals("hdfs://localhost.localdomain:54321",
+				hadoopClusterService.getHDFSUri());
 	}
 
 	@Test
 	public void testGetJobTRackerUri() {
-		assertEquals("localhost.localdomain:54310", hadoopClusterService.getJobTRackerUri());
+		assertEquals("localhost.localdomain:54310",
+				hadoopClusterService.getJobTRackerUri());
 	}
-	
+
 	@Test
-	public void hdfsFileLoggerSinkAndTest()
-			throws FileNotFoundException, IOException {
+	public void hdfsFileLoggerSinkAndTest() throws FileNotFoundException,
+			IOException {
 
 		List<Event> searchEvents = generateSearchAnalyticsDataService
 				.getSearchEvents(11);
-		
+
 		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
 
 		// /Write to file

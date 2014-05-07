@@ -8,15 +8,17 @@ import org.jai.search.model.Product;
 import org.jai.search.model.ProductSearchResult;
 import org.jai.search.model.SearchCriteria;
 
-public interface ProductQueryService
-{
-    ProductSearchResult searchProducts(SearchCriteria searchCriteria);
+public interface ProductQueryService {
+	ProductSearchResult searchProducts(SearchCriteria searchCriteria);
 
-    Product getProduct(ElasticSearchIndexConfig config, Long productId);
+	Product getProduct(ElasticSearchIndexConfig config, Long productId);
 
-    List<AutoSuggestionEntry> getAutoSuggestions(ElasticSearchIndexConfig config, String queryString);
+	List<AutoSuggestionEntry> getAutoSuggestions(
+			ElasticSearchIndexConfig config, String queryString);
 
-    List<AutoSuggestionEntry> getAutoSuggestionsUsingTermsFacet(ElasticSearchIndexConfig config, String string);
+	List<AutoSuggestionEntry> getAutoSuggestionsUsingTermsFacet(
+			ElasticSearchIndexConfig config, String string);
 
-    List<Product> findSimilarProducts(ElasticSearchIndexConfig config, String[] fields, Long productId);
+	List<Product> findSimilarProducts(ElasticSearchIndexConfig config,
+			String[] fields, Long productId);
 }

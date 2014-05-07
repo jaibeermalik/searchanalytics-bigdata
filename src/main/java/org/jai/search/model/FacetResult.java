@@ -1,39 +1,34 @@
 package org.jai.search.model;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class FacetResult
-{
-    private String code;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-    private final List<FacetResultEntry> facetResultEntries = new ArrayList<FacetResultEntry>();
+public class FacetResult {
+	private String code;
 
-    public String getCode()
-    {
-        return code;
-    }
+	private final List<FacetResultEntry> facetResultEntries = new ArrayList<FacetResultEntry>();
 
-    public void setCode(final String code)
-    {
-        this.code = code;
-    }
+	public String getCode() {
+		return code;
+	}
 
-    public List<FacetResultEntry> getFacetResultEntries()
-    {
-        return facetResultEntries;
-    }
+	public void setCode(final String code) {
+		this.code = code;
+	}
 
-    public void addFacetResultEntry(final FacetResultEntry facetResultEntry)
-    {
-        facetResultEntries.add(facetResultEntry);
-    }
+	public List<FacetResultEntry> getFacetResultEntries() {
+		return facetResultEntries;
+	}
 
-    @Override
-    public String toString()
-    {
-        return new ToStringBuilder(this).append(code).append(facetResultEntries).toString();
-    }
+	public void addFacetResultEntry(final FacetResultEntry facetResultEntry) {
+		facetResultEntries.add(facetResultEntry);
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append(code)
+				.append(facetResultEntries).toString();
+	}
 }

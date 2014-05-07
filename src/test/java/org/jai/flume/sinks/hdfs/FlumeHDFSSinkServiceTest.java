@@ -18,7 +18,8 @@ import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class FlumeHDFSSinkServiceTest extends AbstractSearchJUnit4SpringContextTests{
+public class FlumeHDFSSinkServiceTest extends
+		AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
@@ -26,13 +27,13 @@ public class FlumeHDFSSinkServiceTest extends AbstractSearchJUnit4SpringContextT
 	private FlumeHDFSSinkService flumeHDFSSinkService;
 	@Autowired
 	private HadoopClusterService hadoopClusterService;
-	
+
 	@Test
 	public void testProcessEvents() throws FileNotFoundException, IOException {
 		int searchEventsCount = 101;
 		List<Event> searchEvents = generateSearchAnalyticsDataService
 				.getSearchEvents(searchEventsCount);
-		
+
 		flumeHDFSSinkService.processEvents(searchEvents);
 
 		// list all files and check data.

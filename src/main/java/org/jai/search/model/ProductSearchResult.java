@@ -1,56 +1,48 @@
 package org.jai.search.model;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductSearchResult
-{
-    private long totalCount;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-    private List<Product> products = new ArrayList<Product>();
+public class ProductSearchResult {
+	private long totalCount;
 
-    private final List<FacetResult> facets = new ArrayList<FacetResult>();
+	private List<Product> products = new ArrayList<Product>();
 
-    public long getTotalCount()
-    {
-        return totalCount;
-    }
+	private final List<FacetResult> facets = new ArrayList<FacetResult>();
 
-    public void setTotalCount(final long totalCount)
-    {
-        this.totalCount = totalCount;
-    }
+	public long getTotalCount() {
+		return totalCount;
+	}
 
-    public List<Product> getProducts()
-    {
-        return products;
-    }
+	public void setTotalCount(final long totalCount) {
+		this.totalCount = totalCount;
+	}
 
-    public void setProducts(final List<Product> products)
-    {
-        this.products = products;
-    }
+	public List<Product> getProducts() {
+		return products;
+	}
 
-    public void addProduct(final Product product)
-    {
-        products.add(product);
-    }
+	public void setProducts(final List<Product> products) {
+		this.products = products;
+	}
 
-    public List<FacetResult> getFacets()
-    {
-        return facets;
-    }
+	public void addProduct(final Product product) {
+		products.add(product);
+	}
 
-    public void addFacet(final FacetResult facet)
-    {
-        facets.add(facet);
-    }
+	public List<FacetResult> getFacets() {
+		return facets;
+	}
 
-    @Override
-    public String toString()
-    {
-        return new ToStringBuilder(this).append(totalCount).append(products).append(facets).toString();
-    }
+	public void addFacet(final FacetResult facet) {
+		facets.add(facet);
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append(totalCount).append(products)
+				.append(facets).toString();
+	}
 }

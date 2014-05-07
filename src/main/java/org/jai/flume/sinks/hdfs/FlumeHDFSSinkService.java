@@ -9,7 +9,7 @@ import org.apache.flume.Sink;
 public interface FlumeHDFSSinkService {
 
 	Sink getSink();
-	
+
 	void processEvents(List<Event> events);
 
 	void start();

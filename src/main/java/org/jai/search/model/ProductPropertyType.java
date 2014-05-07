@@ -1,7 +1,5 @@
 package org.jai.search.model;
 
-public enum ProductPropertyType
-{
-    SIZE,
-    COLOR
+public enum ProductPropertyType {
+	SIZE, COLOR
 }

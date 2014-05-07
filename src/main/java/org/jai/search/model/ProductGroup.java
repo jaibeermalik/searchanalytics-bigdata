@@ -1,62 +1,53 @@
 package org.jai.search.model;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-
 import java.util.ArrayList;
 
-public class ProductGroup
-{
-    private Long id;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-    private String groupTitle;
+public class ProductGroup {
+	private Long id;
 
-    private String groupDescription;
+	private String groupTitle;
 
-    private final ArrayList<Product> products = new ArrayList<Product>();
+	private String groupDescription;
 
-    public ArrayList<Product> getProducts()
-    {
-        return products;
-    }
+	private final ArrayList<Product> products = new ArrayList<Product>();
 
-    public void addProduct(final Product product)
-    {
-        products.add(product);
-    }
+	public ArrayList<Product> getProducts() {
+		return products;
+	}
 
-    public String getGroupDescription()
-    {
-        return groupDescription;
-    }
+	public void addProduct(final Product product) {
+		products.add(product);
+	}
 
-    public void setGroupDescription(final String groupDescription)
-    {
-        this.groupDescription = groupDescription;
-    }
+	public String getGroupDescription() {
+		return groupDescription;
+	}
 
-    public String getGroupTitle()
-    {
-        return groupTitle;
-    }
+	public void setGroupDescription(final String groupDescription) {
+		this.groupDescription = groupDescription;
+	}
 
-    public void setGroupTitle(final String groupTitle)
-    {
-        this.groupTitle = groupTitle;
-    }
+	public String getGroupTitle() {
+		return groupTitle;
+	}
 
-    public Long getId()
-    {
-        return id;
-    }
+	public void setGroupTitle(final String groupTitle) {
+		this.groupTitle = groupTitle;
+	}
 
-    public void setId(final Long id)
-    {
-        this.id = id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    @Override
-    public String toString()
-    {
-        return new ToStringBuilder(this).append(id).append(groupTitle).append(groupDescription).append(products).toString();
-    }
+	public void setId(final Long id) {
+		this.id = id;
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this).append(id).append(groupTitle)
+				.append(groupDescription).append(products).toString();
+	}
 }

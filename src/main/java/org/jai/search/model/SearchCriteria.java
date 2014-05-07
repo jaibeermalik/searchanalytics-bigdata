@@ -1,232 +1,201 @@
 package org.jai.search.model;
 
-import org.elasticsearch.search.sort.SortOrder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SearchCriteria
-{
-    private String query;
+import org.elasticsearch.search.sort.SortOrder;
 
-    private String[] indices;
+public class SearchCriteria {
+	private String query;
 
-    private String[] documentTypes;
+	private String[] indices;
 
-    private int from = 0;
+	private String[] documentTypes;
 
-    private int size = 10;
+	private int from = 0;
 
-    private SortOrder sortOrder;
+	private int size = 10;
 
-    private boolean noFacets;
+	private SortOrder sortOrder;
 
-    private final List<String> facets = new ArrayList<String>();
+	private boolean noFacets;
 
-    // Used to handle single select in "and" operations
-    private final Map<String, String> singleSelectFilters;
+	private final List<String> facets = new ArrayList<String>();
 
-    // Used for "or" operations between different facet entries.
-    private final Map<String, List<String>> multiSelectFilters;
+	// Used to handle single select in "and" operations
+	private final Map<String, String> singleSelectFilters;
 
-    // Used to filter on field values separately
-    // OR { condition1 AND {condition2 OR condition3 } }
-    private final List<Map<String, Object>> fieldValueFilters;
+	// Used for "or" operations between different facet entries.
+	private final Map<String, List<String>> multiSelectFilters;
 
-    private final List<ProductProperty> productProperties;
+	// Used to filter on field values separately
+	// OR { condition1 AND {condition2 OR condition3 } }
+	private final List<Map<String, Object>> fieldValueFilters;
 
-    private final List<Specification> specifications;
+	private final List<ProductProperty> productProperties;
 
-    // sold out items at the end of list.
-    private boolean rescoreOnSoldOut;
+	private final List<Specification> specifications;
 
-    private boolean useBoostingFactor;
+	// sold out items at the end of list.
+	private boolean rescoreOnSoldOut;
 
-    public SearchCriteria()
-    {
-        singleSelectFilters = new LinkedHashMap<String, String>();
-        multiSelectFilters = new LinkedHashMap<String, List<String>>();
-        fieldValueFilters = new ArrayList<Map<String, Object>>();
-        productProperties = new ArrayList<ProductProperty>();
-        specifications = new ArrayList<Specification>();
-    }
+	private boolean useBoostingFactor;
 
-    public String[] getIndexes()
-    {
-        return indices;
-    }
+	public SearchCriteria() {
+		singleSelectFilters = new LinkedHashMap<String, String>();
+		multiSelectFilters = new LinkedHashMap<String, List<String>>();
+		fieldValueFilters = new ArrayList<Map<String, Object>>();
+		productProperties = new ArrayList<ProductProperty>();
+		specifications = new ArrayList<Specification>();
+	}
 
-    public SearchCriteria indices(final String... indices)
-    {
-        this.indices = indices;
-        return this;
-    }
+	public String[] getIndexes() {
+		return indices;
+	}
 
-    public String[] getDocumentTypes()
-    {
-        return documentTypes;
-    }
+	public SearchCriteria indices(final String... indices) {
+		this.indices = indices;
+		return this;
+	}
 
-    public SearchCriteria documentTypes(final String... documentTypes)
-    {
-        this.documentTypes = documentTypes;
-        return this;
-    }
+	public String[] getDocumentTypes() {
+		return documentTypes;
+	}
 
-    public SearchCriteria query(final String query)
-    {
-        this.query = query;
-        return this;
-    }
+	public SearchCriteria documentTypes(final String... documentTypes) {
+		this.documentTypes = documentTypes;
+		return this;
+	}
 
-    public String getQuery()
-    {
-        return query;
-    }
+	public SearchCriteria query(final String query) {
+		this.query = query;
+		return this;
+	}
 
-    public int getFrom()
-    {
-        return from;
-    }
+	public String getQuery() {
+		return query;
+	}
 
-    public SearchCriteria from(final int from)
-    {
-        this.from = from;
-        return this;
-    }
+	public int getFrom() {
+		return from;
+	}
 
-    public SearchCriteria size(final int size)
-    {
-        this.size = size;
-        return this;
-    }
+	public SearchCriteria from(final int from) {
+		this.from = from;
+		return this;
+	}
 
-    public int getSize()
-    {
-        return size;
-    }
+	public SearchCriteria size(final int size) {
+		this.size = size;
+		return this;
+	}
 
-    public SortOrder getSortOrder()
-    {
-        return sortOrder;
-    }
+	public int getSize() {
+		return size;
+	}
 
-    public SearchCriteria sortOrder(final SortOrder sortOrder)
-    {
-        this.sortOrder = sortOrder;
-        return this;
-    }
+	public SortOrder getSortOrder() {
+		return sortOrder;
+	}
 
-    public boolean isNoFacets()
-    {
-        return noFacets;
-    }
+	public SearchCriteria sortOrder(final SortOrder sortOrder) {
+		this.sortOrder = sortOrder;
+		return this;
+	}
 
-    public SearchCriteria noFacets(final boolean noFacets)
-    {
-        this.noFacets = noFacets;
-        return this;
-    }
+	public boolean isNoFacets() {
+		return noFacets;
+	}
 
-    public List<String> getFacets()
-    {
-        return facets;
-    }
+	public SearchCriteria noFacets(final boolean noFacets) {
+		this.noFacets = noFacets;
+		return this;
+	}
 
-    public SearchCriteria facets(final String facet)
-    {
-        facets.add(facet);
-        return this;
-    }
+	public List<String> getFacets() {
+		return facets;
+	}
 
-    public void addFiledValueFilter(final String fieldName, final Object value)
-    {
-        final Map<String, Object> fieldCrtiteria = new HashMap<String, Object>();
-        fieldCrtiteria.put(fieldName, value);
-        fieldValueFilters.add(fieldCrtiteria);
-    }
+	public SearchCriteria facets(final String facet) {
+		facets.add(facet);
+		return this;
+	}
 
-    public SearchCriteria addMultiSelectFilter(final String facetCode, final String facetTerm)
-    {
-        List<String> list = multiSelectFilters.get(facetCode);
-        if (list == null)
-        {
-            list = new ArrayList<String>();
-            multiSelectFilters.put(facetCode, list);
-        }
-        list.add(facetTerm);
-        return this;
-    }
+	public void addFiledValueFilter(final String fieldName, final Object value) {
+		final Map<String, Object> fieldCrtiteria = new HashMap<String, Object>();
+		fieldCrtiteria.put(fieldName, value);
+		fieldValueFilters.add(fieldCrtiteria);
+	}
 
-    public SearchCriteria addSingleSelectFilter(final String facetCode, final String facetTerm)
-    {
-        singleSelectFilters.put(facetCode, facetTerm);
-        return this;
-    }
+	public SearchCriteria addMultiSelectFilter(final String facetCode,
+			final String facetTerm) {
+		List<String> list = multiSelectFilters.get(facetCode);
+		if (list == null) {
+			list = new ArrayList<String>();
+			multiSelectFilters.put(facetCode, list);
+		}
+		list.add(facetTerm);
+		return this;
+	}
 
-    public boolean hasFilters()
-    {
-        return singleSelectFilters.size() > 0 || multiSelectFilters.size() > 0 || fieldValueFilters.size() > 0
-                || productProperties.size() > 0 || specifications.size() > 0;
-    }
+	public SearchCriteria addSingleSelectFilter(final String facetCode,
+			final String facetTerm) {
+		singleSelectFilters.put(facetCode, facetTerm);
+		return this;
+	}
 
-    public List<Map<String, Object>> getFieldValueFilters()
-    {
-        return fieldValueFilters;
-    }
+	public boolean hasFilters() {
+		return singleSelectFilters.size() > 0 || multiSelectFilters.size() > 0
+				|| fieldValueFilters.size() > 0 || productProperties.size() > 0
+				|| specifications.size() > 0;
+	}
 
-    public Map<String, String> getSingleSelectFilters()
-    {
-        return singleSelectFilters;
-    }
+	public List<Map<String, Object>> getFieldValueFilters() {
+		return fieldValueFilters;
+	}
 
-    public Map<String, List<String>> getMultiSelectFilters()
-    {
-        return multiSelectFilters;
-    }
+	public Map<String, String> getSingleSelectFilters() {
+		return singleSelectFilters;
+	}
 
-    public void addProductProperty(final ProductProperty productProperty)
-    {
-        productProperties.add(productProperty);
-    }
+	public Map<String, List<String>> getMultiSelectFilters() {
+		return multiSelectFilters;
+	}
 
-    public List<ProductProperty> getProductProperties()
-    {
-        return productProperties;
-    }
+	public void addProductProperty(final ProductProperty productProperty) {
+		productProperties.add(productProperty);
+	}
 
-    public List<Specification> getSpecifications()
-    {
-        return specifications;
-    }
+	public List<ProductProperty> getProductProperties() {
+		return productProperties;
+	}
 
-    public void addSpecifications(final Specification specification)
-    {
-        specifications.add(specification);
-    }
+	public List<Specification> getSpecifications() {
+		return specifications;
+	}
 
-    public boolean isRescoreOnSoldOut()
-    {
-        return rescoreOnSoldOut;
-    }
+	public void addSpecifications(final Specification specification) {
+		specifications.add(specification);
+	}
 
-    public SearchCriteria rescoreOnSoldOut(final boolean rescoreOnSoldOut)
-    {
-        this.rescoreOnSoldOut = rescoreOnSoldOut;
-        return this;
-    }
+	public boolean isRescoreOnSoldOut() {
+		return rescoreOnSoldOut;
+	}
 
-    public boolean isUseBoostingFactor()
-    {
-        return useBoostingFactor;
-    }
+	public SearchCriteria rescoreOnSoldOut(final boolean rescoreOnSoldOut) {
+		this.rescoreOnSoldOut = rescoreOnSoldOut;
+		return this;
+	}
 
-    public SearchCriteria useBoostingFactor(final boolean useBoostingFactor)
-    {
-        this.useBoostingFactor = useBoostingFactor;
-        return this;
-    }
+	public boolean isUseBoostingFactor() {
+		return useBoostingFactor;
+	}
+
+	public SearchCriteria useBoostingFactor(final boolean useBoostingFactor) {
+		this.useBoostingFactor = useBoostingFactor;
+		return this;
+	}
 }

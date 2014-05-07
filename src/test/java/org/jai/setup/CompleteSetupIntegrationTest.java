@@ -33,7 +33,8 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CompleteSetupIntegrationTest extends AbstractSearchJUnit4SpringContextTests {
+public class CompleteSetupIntegrationTest extends
+		AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
@@ -67,7 +68,7 @@ public class CompleteSetupIntegrationTest extends AbstractSearchJUnit4SpringCont
 
 			TestHiveDatabaseSearchClicks();
 
-			 startOozieAddHivePartitionJob();
+			startOozieAddHivePartitionJob();
 			// sleep 10 sec for partition to be added.
 			// Thread.sleep(100*1000);
 
@@ -80,7 +81,7 @@ public class CompleteSetupIntegrationTest extends AbstractSearchJUnit4SpringCont
 	}
 
 	private void startOozieAddHivePartitionJob() {
-//		oozieJobsService.startHiveAddPartitionCoordJob();
+		// oozieJobsService.startHiveAddPartitionCoordJob();
 	}
 
 	private void TestHiveDatabaseSearchClicks() throws InterruptedException {
@@ -107,7 +108,7 @@ public class CompleteSetupIntegrationTest extends AbstractSearchJUnit4SpringCont
 				.valueOf(hourOfDay);
 		String dbName = "search";
 		String tbName = "search_clicks";
-//		String tbNameInternal = "search_clicks_internal";
+		// String tbNameInternal = "search_clicks_internal";
 
 		hiveSearchClicksService.addPartition(dbName, tbName, year, month, day,
 				hour);

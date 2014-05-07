@@ -1,40 +1,43 @@
 package org.jai.search.setup;
 
-import org.jai.search.config.ElasticSearchIndexConfig;
-import org.jai.search.model.ProductGroup;
-
 import java.util.List;
 import java.util.Map;
 
-public interface SetupIndexService
-{
-    void createIndex(ElasticSearchIndexConfig searchIndexConfig);
+import org.jai.search.config.ElasticSearchIndexConfig;
+import org.jai.search.model.ProductGroup;
 
-    void reCreateIndex(ElasticSearchIndexConfig searchIndexConfig);
+public interface SetupIndexService {
+	void createIndex(ElasticSearchIndexConfig searchIndexConfig);
 
-    String createNewIndex(ElasticSearchIndexConfig searchIndexConfig);
+	void reCreateIndex(ElasticSearchIndexConfig searchIndexConfig);
 
-    void updateIndexSettings(ElasticSearchIndexConfig config, Map<String, Object> settings);
+	String createNewIndex(ElasticSearchIndexConfig searchIndexConfig);
 
-    void updateDocumentTypeMapping(ElasticSearchIndexConfig config, String indexName, String documentType, boolean parentRelationship);
+	void updateIndexSettings(ElasticSearchIndexConfig config,
+			Map<String, Object> settings);
 
-    void updateIndexDocumentTypeMappings(ElasticSearchIndexConfig config, String indexName);
+	void updateDocumentTypeMapping(ElasticSearchIndexConfig config,
+			String indexName, String documentType, boolean parentRelationship);
 
-    void setupAllIndices(boolean parentRelationship);
+	void updateIndexDocumentTypeMappings(ElasticSearchIndexConfig config,
+			String indexName);
 
-    void setupAllIndices();
+	void setupAllIndices(boolean parentRelationship);
 
-    void indexProductGroupData(List<ProductGroup> productGroups);
+	void setupAllIndices();
 
-    boolean isIndexExists(String indexName);
+	void indexProductGroupData(List<ProductGroup> productGroups);
 
-    boolean deleteIndex(String indexName);
+	boolean isIndexExists(String indexName);
 
-    String getIndexSettings(ElasticSearchIndexConfig config, String settingName);
+	boolean deleteIndex(String indexName);
 
-    boolean isAliasExists(String indexAliasName);
+	String getIndexSettings(ElasticSearchIndexConfig config, String settingName);
 
-    List<String> analyzeText(String indexAliasName, String analyzer, String[] tokenFilters, String text);
+	boolean isAliasExists(String indexAliasName);
 
-    void replaceAlias(String newIndexName, String indexAliasName);
+	List<String> analyzeText(String indexAliasName, String analyzer,
+			String[] tokenFilters, String text);
+
+	void replaceAlias(String newIndexName, String indexAliasName);
 }
