@@ -1,4 +1,4 @@
-Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Oozie, ElasticSearch, Akka.
+Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Oozie, ElasticSearch, Akka, Spring Data.
 ===================
 
 Repository contains unit/integration test cases to generate analytics based on clicks events related to the product search on any e-commerce website.  
@@ -7,26 +7,6 @@ Getting Started
 ---------------
 
 The project is maven project and can be build with Eclipse. Check pom dependencies for relevant version of earch application. It uses cloudera hadoop distribution version 2.3.0-cdh5.0.0. 
-
-Testing
----------------
-The application uses mini hdfs and mini mr cluster for test cases.
-If you want to use the same for external hdfs location, please change relevant configurations and use accordingly.
-
-FlumeAgentService
----------------
-The application uses inbuilt rolling file sink for the EmbeddedAgent. You can also setup and start external flume agent and point the embedded agent to the same. 
-
-JSONSerDe:
-To map the json data to hive queries, custom SerDe is used. Create jar and add to your own hive environment to query data if you use external flume source as configured above.  
-To create json SerDe jar,
-$ jar cf jaihivejsonserde-1.0.jar org/jai/hive/serde/JSONSerDe.class
-
-ElasticSearchJsonBodyEventSerializer:
-Customer ES serializer is used to put data from hadoop to ElasticSearch using hive.
-To create ES jsons erializer jar,
-$ cd target/classes
-$ jar cf jaiflumeesjsonserializer-1.0.jar org/jai/flume/sinks/elasticsearch/serializer/ElasticSearchJsonBodyEventSerializer.class
 
 Functionality
 -----
@@ -53,6 +33,29 @@ Job Based:
 ->Hive External tablet to load topqueries data to ElasticSearch
 ->Oozie bundle job to load hive data for top queries and accordingly update ES index data. 
 </pre>
+
+Hadoop
+---------------
+The application uses mini hdfs and mini mr cluster for test cases.
+If you want to use the same for external hdfs location, please change relevant configurations and use accordingly.
+
+Flume
+---------------
+FlumeAgentService to control map search events to both hdfs and ES bases on multiplexing selector approach.
+The application uses inbuilt rolling file sink for the EmbeddedAgent. You can also setup and start external flume agent and point the embedded agent to the same. 
+
+JSONSerDe:
+To map the json data to hive queries, custom SerDe is used. Create jar and add to your own hive environment to query data if you use external flume source as configured above.  
+To create json SerDe jar,
+$ jar cf jaihivejsonserde-1.0.jar org/jai/hive/serde/JSONSerDe.class
+
+ElasticSearch
+---------------
+ElasticSearchJsonBodyEventSerializer:
+Customer ES serializer is used to put data from hadoop to ElasticSearch using hive.
+To create ES jsons erializer jar,
+$ cd target/classes
+$ jar cf jaiflumeesjsonserializer-1.0.jar org/jai/flume/sinks/elasticsearch/serializer/ElasticSearchJsonBodyEventSerializer.class
 
 Product Search Functionality  
 -----
@@ -109,5 +112,14 @@ ElasticSearch Customer Top queries information
 {id=47_queryString85, querystring=queryString85, querycount=1, customerid=47}
 </pre>
 
+Oozie
+-----
+Coordinator jobs runs hourly to create hive partitions based on hadoop data.
+Bundle job to query top query strings and index to elasticsearch on daily basis.
+LocalOozie is used to start oozier server for testing purpose.
 
-[Jaibeer Malik](http://jaibeermalik.wordpress.com/category/tech-stuff/elasticsearch/)
+Spring Data Hadoop
+-----
+Spring data is used for hive server management. The bean and context loading support to manage dependent start/shutdown of different servers/services.
+
+[Jaibeer Malik](http://jaibeermalik.wordpress.com)
