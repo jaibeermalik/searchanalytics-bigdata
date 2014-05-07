@@ -1,17 +1,12 @@
 package org.jai.search.analytics;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.List;
 
 import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
-
-import java.net.UnknownHostException;
-import java.util.List;
 
 public interface GenerateSearchAnalyticsDataService
 {
-    void generateAndPushSearchEvents(int numberOfEvents) throws UnknownHostException, JsonProcessingException, EventDeliveryException,
-            InterruptedException;
+    void generateAndPushSearchEvents(int numberOfEvents);
     
     List<Event> getSearchEvents(int numberOfEvents);
 }

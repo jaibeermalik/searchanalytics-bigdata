@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.apache.flume.Channel;
 import org.apache.flume.ChannelSelector;
 import org.apache.flume.Context;
+import org.apache.flume.EventDeliveryException;
 import org.apache.flume.agent.embedded.EmbeddedAgent;
 import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.channel.MemoryChannel;
@@ -16,15 +17,24 @@ import org.apache.flume.channel.MultiplexingChannelSelector;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.RollingFileSink;
 import org.apache.flume.source.AvroSource;
+import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
+import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FlumeAgentServiceImpl implements FlumeAgentService{
 
+	
 	private static final Logger LOG = LoggerFactory.getLogger(FlumeAgentServiceImpl.class);
 	
+	@Autowired
+	private FlumeHDFSSinkService flumeHDFSSinkService;
+	@Autowired
+	private FlumeESSinkService flumeESSinkService;
+
 	private static EmbeddedAgent agent;
 	//Ideally external avro source to consume embedded agent data. For testing here.
 	private AvroSource avroSource;
@@ -34,11 +44,44 @@ public class FlumeAgentServiceImpl implements FlumeAgentService{
 	@Override
 	public void setup()
     {
-		createAvroSource();
+		createAvroSourceWithSelectorHDFSAndESSinks();
         createAgent();
     }
 
-	private void createAvroSource() {
+	private void createAvroSourceWithSelectorHDFSAndESSinks() {
+		Channel ESChannel = flumeESSinkService.getChannel();
+		Channel HDFSChannel = flumeHDFSSinkService.getChannel();
+
+		final Map<String, String> properties = new HashMap<String, String>();
+		properties.put("type", "avro");
+		properties.put("bind", "localhost");
+        properties.put("port", "44444");
+       
+        
+        avroSource = new AvroSource();
+        avroSource.setName("AvroSource-" + UUID.randomUUID());
+        Context sourceContext = new Context(properties);
+		avroSource.configure(sourceContext);
+		ChannelSelector selector = new MultiplexingChannelSelector();
+		List<Channel> channels = new ArrayList<>();
+		channels.add(ESChannel);
+		channels.add(HDFSChannel);
+		selector.setChannels(channels);
+		final Map<String, String> selectorProperties = new HashMap<String, String>();
+		selectorProperties.put("type", "multiplexing");
+		selectorProperties.put("header", "State");
+		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " " + ESChannel.getName());
+		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " " + ESChannel.getName());
+		selectorProperties.put("default", HDFSChannel.getName());
+		Context selectorContext = new Context(selectorProperties);
+		selector.configure(selectorContext);
+		ChannelProcessor cp = new ChannelProcessor(selector);
+		avroSource.setChannelProcessor(cp);
+		
+		avroSource.start();
+	}
+	
+	private void createAvroSourceWithLocalFileRollingSink() {
 		channel = new MemoryChannel();
 		String channelName = "AvroSourceMemoryChannel-" + UUID.randomUUID();
 		channel.setName(channelName);
@@ -96,6 +139,25 @@ public class FlumeAgentServiceImpl implements FlumeAgentService{
     		avroSource.stop();
         }
     }
+	
+	@Override
+	public void processAllEvents() 
+	{
+		try {
+			//sleep 10 sec to be able to deliver events from embedded agent to source.
+			Thread.sleep(10000);
+//			for (Channel channel : avroSource.getChannelProcessor().getSelector().getAllChannels()) {
+//				Transaction transaction = channel.getTransaction();
+//				transaction.commit();
+//			}
+			flumeHDFSSinkService.getSink().process();
+			flumeESSinkService.getSink().process();
+		} catch (EventDeliveryException | InterruptedException  e) {
+			String errMsg = "Error processing event!";
+			LOG.error(errMsg,e);
+			throw new RuntimeException(errMsg,e);
+		}
+	}
     
     private void createAgent()
     {

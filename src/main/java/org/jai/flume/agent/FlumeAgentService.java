@@ -16,4 +16,6 @@ public interface FlumeAgentService {
 	void shutdown();
 
 	EmbeddedAgent getFlumeAgent();
+
+	void processAllEvents();
 }

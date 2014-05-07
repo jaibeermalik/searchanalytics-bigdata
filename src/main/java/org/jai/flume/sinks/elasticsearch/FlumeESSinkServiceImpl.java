@@ -69,10 +69,20 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 		sink.stop();
 	}
 
+	@Override
+	public Channel getChannel() {
+		return channel;
+	}
+	
 	private void createSink() {
 		sink = new ElasticSearchSink();
 		sink.setName("ElasticSearchSink-" + UUID.randomUUID());
 		channel = new MemoryChannel();
+		Map<String, String> channelParamters = new HashMap<>();
+		channelParamters.put("capacity", "1000");
+		channelParamters.put("transactionCapacity", "1000");
+		Context channelContext = new Context(channelParamters);
+		Configurables.configure(channel, channelContext);
 		channel.setName("ElasticSearchSinkChannel-" + UUID.randomUUID());
 
 		Map<String, String> paramters = new HashMap<>();
@@ -88,7 +98,6 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);
-		Configurables.configure(channel, sinkContext);
 		sink.setChannel(channel);
 
 		sink.start();

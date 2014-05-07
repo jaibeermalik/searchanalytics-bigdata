@@ -13,8 +13,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
 import org.apache.flume.event.JSONEvent;
+import org.apache.hive.com.esotericsoftware.minlog.Log;
 import org.elasticsearch.search.sort.SortOrder;
 import org.jai.flume.agent.FlumeAgentService;
 import org.jai.search.config.ElasticSearchIndexConfig;
@@ -51,58 +51,68 @@ public class GenerateSearchAnalyticsDataImpl implements
 	private FlumeAgentService flumeAgentService;
 
 	@Override
-	public void generateAndPushSearchEvents(final int numberOfEvents)
-			throws UnknownHostException, JsonProcessingException,
-			EventDeliveryException, InterruptedException {
+	public void generateAndPushSearchEvents(final int numberOfEvents) {
 		Assert.isTrue(numberOfEvents > 0,
 				"Number of events should be greater than zero!");
 		searchEventsLogger.debug("Starting generating data!");
-		final SearchCriteria searchCriteria = getSearchCriteria();
-		final ProductSearchResult searchProducts = productQueryService
-				.searchProducts(searchCriteria);
-		for (int i = 1, j = 1; i <= numberOfEvents; i++) {
-			// sleep 1 secs every 1k requests.
-			if (i == 1000 * j) {
-				Thread.sleep(1000);
-				j++;
+		try {
+			final SearchCriteria searchCriteria = getSearchCriteria();
+			final ProductSearchResult searchProducts = productQueryService
+					.searchProducts(searchCriteria);
+			for (int i = 1, j = 1; i <= numberOfEvents; i++) {
+				// sleep 1 secs every 1k requests.
+				if (i == 1000 * j) {
+					Thread.sleep(1000);
+					j++;
+				}
+				final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(
+						i, searchProducts);
+				final Event event = getJsonEvent(searchQueryInstruction);
+				flumeAgentService.getFlumeAgent().put(event);
 			}
-			final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(
-					i, searchProducts);
-			final Event event = getJsonEvent(searchQueryInstruction);
-			flumeAgentService.getFlumeAgent().put(event);
-		}
-		// ObjectMapper mapper = new ObjectMapper();
-		// for (Product product : searchProducts.getProducts())
-		// {
-		// String writeProductValueAsString =
-		// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-		// productQueryService.getProduct(config, product.getId()));
-		// }
+			
+//			flumeAgentService.processAllEvents();
+			// ObjectMapper mapper = new ObjectMapper();
+			// for (Product product : searchProducts.getProducts())
+			// {
+			// String writeProductValueAsString =
+			// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
+			// productQueryService.getProduct(config, product.getId()));
+			// }
 
-		// wait for 5 sec before all events are submitted...in test case agent
-		// is destroyed.
-		Thread.sleep(5000);
+			// wait for 5 sec before all events are submitted...in test case
+			// agent
+			// is destroyed.
+			System.out.println("Sleeping for 5 sec to wait for search events to be processed!");
+			Thread.sleep(5000);
+			flumeAgentService.processAllEvents();
+		} catch (Exception e) {
+			String errMsg = "Error occured while generating search events data!";
+			Log.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
+		}
 	}
 
 	@Override
-    public List<Event> getSearchEvents(int numberOfEvents) {
-    	try
-    	{
-    		List<Event> events = new ArrayList<>();
-    		final SearchCriteria searchCriteria = getSearchCriteria();
-    		final ProductSearchResult searchProducts = productQueryService.searchProducts(searchCriteria);
-    		
-    		for (int i = 1; i <= numberOfEvents; i++)
-    		{
-    			final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(i, searchProducts);
-    			final Event event = getJsonEvent(searchQueryInstruction);
-    			events.add(event);
-    		}
-    		return events;
-    	}catch (UnknownHostException | JsonProcessingException ex) {
-    		throw new RuntimeException("Error occured while generating search events!", ex);
-    	}
-    }
+	public List<Event> getSearchEvents(int numberOfEvents) {
+		try {
+			List<Event> events = new ArrayList<>();
+			final SearchCriteria searchCriteria = getSearchCriteria();
+			final ProductSearchResult searchProducts = productQueryService
+					.searchProducts(searchCriteria);
+
+			for (int i = 1; i <= numberOfEvents; i++) {
+				final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(
+						i, searchProducts);
+				final Event event = getJsonEvent(searchQueryInstruction);
+				events.add(event);
+			}
+			return events;
+		} catch (UnknownHostException | JsonProcessingException ex) {
+			throw new RuntimeException(
+					"Error occured while generating search events!", ex);
+		}
+	}
 
 	private Event getJsonEvent(
 			final SearchQueryInstruction searchQueryInstruction)
@@ -125,12 +135,10 @@ public class GenerateSearchAnalyticsDataImpl implements
 		headers.put("timestamp", searchQueryInstruction
 				.getCreatedTimeStampInMillis().toString());
 		if (searchQueryInstruction.getClickedDocId() != null) {
-			if(searchQueryInstruction.getFavourite() !=null && searchQueryInstruction.getFavourite())
-			{
-				headers.put("State", "FAVOURITE");	
-			}
-			else
-			{
+			if (searchQueryInstruction.getFavourite() != null
+					&& searchQueryInstruction.getFavourite()) {
+				headers.put("State", "FAVOURITE");
+			} else {
 				headers.put("State", "VIEWED");
 			}
 		}

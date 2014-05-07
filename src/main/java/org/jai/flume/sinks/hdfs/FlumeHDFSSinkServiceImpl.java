@@ -71,10 +71,20 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 		sink.stop();
 	}
 
+	@Override
+	public Channel getChannel() {
+		return channel;
+	}
+	
 	private void createSink() {
 		sink = new HDFSEventSink();
 		sink.setName("HDFSEventSink-" + UUID.randomUUID());
 		channel = new MemoryChannel();
+		Map<String, String> channelParamters = new HashMap<>();
+		channelParamters.put("capacity", "1000");
+		channelParamters.put("transactionCapacity", "1000");
+		Context channelContext = new Context(channelParamters);
+		Configurables.configure(channel, channelContext);
 		channel.setName("HDFSEventSinkChannel-" + UUID.randomUUID());
 
 		Map<String, String> paramters = new HashMap<>();
@@ -88,12 +98,11 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 		paramters.put("hdfs.rollSize", "0");
 		paramters.put("hdfs.idleTimeout", "1");
 		paramters.put("hdfs.rollCount", "0");
-		paramters.put("hdfs.batchSize", "10");
+		paramters.put("hdfs.batchSize", "1000");
 		paramters.put("hdfs.useLocalTimeStamp", "true");
 
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);
-		Configurables.configure(channel, sinkContext);
 		sink.setChannel(channel);
 
 		sink.start();
