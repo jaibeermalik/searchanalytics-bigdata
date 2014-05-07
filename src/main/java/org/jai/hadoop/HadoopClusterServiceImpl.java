@@ -8,10 +8,15 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HadoopClusterServiceImpl implements HadoopClusterService {
+
+	private static final Logger LOG = LoggerFactory
+			.getLogger(HadoopClusterServiceImpl.class);
 
 	private MiniDFSCluster miniDFSCluster;
 	private MiniMRCluster miniMRCluster;
@@ -21,17 +26,18 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		try {
 			return miniDFSCluster.getFileSystem();
 		} catch (IOException e) {
-			throw new RuntimeException("Error accessing file system!", e);
+			String errorMsg = "Error accessing file system!";
+			LOG.error(errorMsg, e);
+			throw new RuntimeException(errorMsg, e);
 		}
 	}
 
 	@Override
 	public String getHDFSUri() {
-		String hdfsURI = "hdfs://localhost.localdomain:"
+		return "hdfs://localhost.localdomain:"
 				+ miniDFSCluster.getNameNodePort();
-		return hdfsURI;
 	}
-	
+
 	@Override
 	public String getJobTRackerUri() {
 		return "localhost.localdomain:" + miniMRCluster.getJobTrackerPort();
@@ -56,36 +62,29 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		}
 
 		String testName = "trial";
-		File baseDir = new File("target/hdfs/" + testName)
-				.getAbsoluteFile();
+		File baseDir = new File("target/hdfs/" + testName).getAbsoluteFile();
 		FileUtil.fullyDelete(baseDir);
 		Configuration configuration = new Configuration();
-		configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, baseDir.getAbsolutePath());
-		configuration.set("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-		configuration.set("hadoop.tmp.dir", new File("target/hadooptmp").getAbsolutePath());
+		configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,
+				baseDir.getAbsolutePath());
+		configuration.set("hadoop.log.dir",
+				new File("target/logs").getAbsolutePath());
+		configuration.set("hadoop.tmp.dir",
+				new File("target/hadooptmp").getAbsolutePath());
 		configuration.set("hadoop.proxyuser.oozie.hosts", "*");
 		configuration.set("hadoop.proxyuser.oozie.groups", "*");
 		configuration.set("hadoop.proxyuser.tom.hosts", "*");
 		configuration.set("hadoop.proxyuser.tom.groups", "*");
 		configuration.set("hadoop.proxyuser.mapred.hosts", "*");
 		configuration.set("hadoop.proxyuser.mapred.groups", "*");
-		
-		System.setProperty("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-		System.setProperty("hadoop.tmp.dir", new File("target/hadooptmp").getAbsolutePath());
-		
-//		configuration.set("mapred.local.dir", new File("target/mapreddir").getAbsolutePath());
-//		configuration.set("dfs.datanode.hostname", "localhost.localdomain");
-//		configuration.set("mapred.job.tracker", "localhost.localdomain:54310");
-//		configuration.set("mapreduce.jobhistory.address", "localhost.localdomain:54311");
-//		configuration.set("mapreduce.jobhistory.webapp.address", "localhost.localdomain:54312");
-//		configuration.set("mapred.job.tracker.http.address", "localhost.localdomain:54313");
-//		configuration.set("mapred.task.tracker.http.address", "localhost.localdomain:54314");
-//		configuration.set("mapred.task.tracker.http.address", "localhost.localdomain:54314");
-//		configuration.set("mapreduce.task.tmp.dir", new File("target/mapredtaskdir").getAbsolutePath());
-//		configuration.set("hadoop.job.history.location", new File("target/logs/history").getAbsolutePath());
-//		configuration.set("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-//		
-		MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(configuration);
+
+		System.setProperty("hadoop.log.dir",
+				new File("target/logs").getAbsolutePath());
+		System.setProperty("hadoop.tmp.dir",
+				new File("target/hadooptmp").getAbsolutePath());
+
+		MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(
+				configuration);
 		builder.nameNodePort(54321);
 		try {
 			miniDFSCluster = builder.build();
@@ -93,7 +92,7 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 			e.printStackTrace();
 			throw new RuntimeException("Error starting cluster!", e);
 		}
-		System.out.println("Mini Cluster started!" + getHDFSUri());
+		LOG.info("Mini Cluster started! {}", getHDFSUri());
 	}
 
 	private void startMRCluster() {
@@ -102,43 +101,58 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 			return;
 		}
 		Configuration configuration = new Configuration();
-		configuration.set("mapred.local.dir", new File("target/mapreddir").getAbsolutePath());
+		configuration.set("mapred.local.dir",
+				new File("target/mapreddir").getAbsolutePath());
 		configuration.set("dfs.datanode.hostname", "localhost.localdomain");
 		configuration.set("mapred.job.tracker", "localhost.localdomain:54310");
-		configuration.set("mapreduce.jobhistory.address", "localhost.localdomain:54311");
-		configuration.set("mapreduce.jobhistory.webapp.address", "localhost.localdomain:54312");
-		configuration.set("mapred.job.tracker.http.address", "localhost.localdomain:54313");
-		configuration.set("mapred.task.tracker.http.address", "localhost.localdomain:54314");
-		configuration.set("mapreduce.task.tmp.dir", new File("target/mapredtaskdir").getAbsolutePath());
+		configuration.set("mapreduce.jobhistory.address",
+				"localhost.localdomain:54311");
+		configuration.set("mapreduce.jobhistory.webapp.address",
+				"localhost.localdomain:54312");
+		configuration.set("mapred.job.tracker.http.address",
+				"localhost.localdomain:54313");
+		configuration.set("mapred.task.tracker.http.address",
+				"localhost.localdomain:54314");
+		configuration.set("mapreduce.task.tmp.dir", new File(
+				"target/mapredtaskdir").getAbsolutePath());
 		configuration.set("hadoop.job.history.location", "none");
-		configuration.set("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-		
-		//Job history won't start NPE
-		System.setProperty("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-		System.setProperty("mapred.local.dir", new File("target/mapreddir").getAbsolutePath());
+		configuration.set("hadoop.log.dir",
+				new File("target/logs").getAbsolutePath());
+
+		// Job history won't start NPE
+		System.setProperty("hadoop.log.dir",
+				new File("target/logs").getAbsolutePath());
+		System.setProperty("mapred.local.dir",
+				new File("target/mapreddir").getAbsolutePath());
 		System.setProperty("dfs.datanode.hostname", "localhost.localdomain");
 		System.setProperty("mapred.job.tracker", "localhost.localdomain:54310");
-		System.setProperty("mapreduce.jobhistory.address", "localhost.localdomain:54311");
-		System.setProperty("mapreduce.jobhistory.webapp.address", "localhost.localdomain:54312");
-		System.setProperty("mapred.job.tracker.http.address", "localhost.localdomain:54313");
-		System.setProperty("mapred.task.tracker.http.address", "localhost.localdomain:54314");
-		System.setProperty("mapreduce.task.tmp.dir", new File("target/mapredtaskdir").getAbsolutePath());
+		System.setProperty("mapreduce.jobhistory.address",
+				"localhost.localdomain:54311");
+		System.setProperty("mapreduce.jobhistory.webapp.address",
+				"localhost.localdomain:54312");
+		System.setProperty("mapred.job.tracker.http.address",
+				"localhost.localdomain:54313");
+		System.setProperty("mapred.task.tracker.http.address",
+				"localhost.localdomain:54314");
+		System.setProperty("mapreduce.task.tmp.dir", new File(
+				"target/mapredtaskdir").getAbsolutePath());
 		System.setProperty("hadoop.job.history.location", "none");
-		System.setProperty("hadoop.log.dir", new File("target/logs").getAbsolutePath());
-		 
+		System.setProperty("hadoop.log.dir",
+				new File("target/logs").getAbsolutePath());
+
 		try {
 			DistributedFileSystem fileSystem = miniDFSCluster.getFileSystem();
-//			miniMRCluster = new MiniMRCluster(1, fileSystem.getUri()
-//					.toString(), 1, null, null, new JobConf(configuration));
-			miniMRCluster = new MiniMRCluster(54310, 54311, 1, fileSystem.getUri()
-					.toString(), 1);
-//			System.setProperty("mapred.job.tracker", miniMRCluster.createJobConf(new JobConf(configuration)).get("mapred.job.tracker"));
+			// miniMRCluster = new MiniMRCluster(1, fileSystem.getUri()
+			// .toString(), 1, null, null, new JobConf(configuration));
+			miniMRCluster = new MiniMRCluster(54310, 54311, 1, fileSystem
+					.getUri().toString(), 1);
 		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error starting cluster!", e);
+			String errMsg = "Error starting cluster!";
+			LOG.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
 		}
 
-		System.out.println("Mini Cluster started!" + getHDFSUri());
+		LOG.info("Mini Cluster started! {}", getJobTRackerUri());
 	}
 
 }

@@ -77,7 +77,6 @@ public class GenerateSearchAnalyticsDataImpl implements
 		// String writeProductValueAsString =
 		// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
 		// productQueryService.getProduct(config, product.getId()));
-		// System.out.println("JSON format: " + writeProductValueAsString);
 		// }
 
 		// wait for 5 sec before all events are submitted...in test case agent
@@ -118,7 +117,6 @@ public class GenerateSearchAnalyticsDataImpl implements
 				.writeValueAsString(searchQueryInstruction);
 		// String writeValueAsString =
 		// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(searchQueryInstruction);
-		// System.out.println("JSON format: " + writeValueAsString);
 		searchEventsLogger.info(searchQueryInstructionAsString);
 		final Event event = new JSONEvent();
 		event.setBody(searchQueryInstructionAsString.getBytes());
@@ -127,7 +125,14 @@ public class GenerateSearchAnalyticsDataImpl implements
 		headers.put("timestamp", searchQueryInstruction
 				.getCreatedTimeStampInMillis().toString());
 		if (searchQueryInstruction.getClickedDocId() != null) {
-			headers.put("State", "VIEWED");
+			if(searchQueryInstruction.getFavourite() !=null && searchQueryInstruction.getFavourite())
+			{
+				headers.put("State", "FAVOURITE");	
+			}
+			else
+			{
+				headers.put("State", "VIEWED");
+			}
 		}
 		event.setHeaders(headers);
 		return event;

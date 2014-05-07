@@ -16,10 +16,15 @@ import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.elasticsearch.ElasticSearchSink;
 import org.apache.flume.sink.elasticsearch.ElasticSearchSinkConstants;
 import org.jai.flume.sinks.elasticsearch.serializer.ElasticSearchJsonBodyEventSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FlumeESSinkServiceImpl implements FlumeESSinkService {
+
+	private static final Logger LOG = LoggerFactory
+			.getLogger(FlumeESSinkServiceImpl.class);
 
 	private ElasticSearchSink sink;
 	private Channel channel;
@@ -31,7 +36,6 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 
 	@Override
 	public void processEvents(List<Event> events) {
-		// TODO: do this in batches.
 		int batchSize = 10;
 		int batches = events.size() / batchSize;
 		for (int i = 0; i <= batches; i++) {
@@ -41,14 +45,14 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 			int to = (i == batches) ? events.size() : from + batchSize;
 			for (Event event : events.subList(from, to)) {
 				channel.put(event);
-//				System.out.println("Putting event to channel: " + event);
+				LOG.debug("Putting event to channel: {} ", event);
 			}
 			txn.commit();
 			txn.close();
 			try {
 				sink.process();
 			} catch (EventDeliveryException e) {
-				e.printStackTrace();
+				LOG.error("Error processing events!", e);
 				throw new RuntimeException("Error processing events!", e);
 			}
 		}
@@ -72,7 +76,6 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 		channel.setName("ElasticSearchSinkChannel-" + UUID.randomUUID());
 
 		Map<String, String> paramters = new HashMap<>();
-//		paramters.put("type", "elasticsearch");
 		paramters.put(ElasticSearchSinkConstants.HOSTNAMES, "127.0.0.1:9310");
 		String indexNamePrefix = "recentlyviewed";
 		paramters.put(ElasticSearchSinkConstants.INDEX_NAME, indexNamePrefix);
@@ -80,9 +83,8 @@ public class FlumeESSinkServiceImpl implements FlumeESSinkService {
 		paramters.put(ElasticSearchSinkConstants.CLUSTER_NAME,
 				"jai-testclusterName");
 		paramters.put(ElasticSearchSinkConstants.BATCH_SIZE, "10");
-		paramters
-				.put(ElasticSearchSinkConstants.SERIALIZER,ElasticSearchJsonBodyEventSerializer.class.getName());
-//						"org.jai.flume.sinks.elasticsearch.serializer.ElasticSearchJsonBodyEventSerializer");
+		paramters.put(ElasticSearchSinkConstants.SERIALIZER,
+				ElasticSearchJsonBodyEventSerializer.class.getName());
 
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);

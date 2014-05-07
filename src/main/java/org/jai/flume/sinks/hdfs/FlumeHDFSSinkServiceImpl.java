@@ -15,11 +15,16 @@ import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.hdfs.HDFSEventSink;
 import org.jai.hadoop.HadoopClusterService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
+	
+	private static final Logger LOG = LoggerFactory
+			.getLogger(FlumeHDFSSinkServiceImpl.class);
 
 	private HDFSEventSink sink;
 	private Channel channel;
@@ -33,7 +38,6 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 
 	@Override
 	public void processEvents(List<Event> events) {
-		// TODO: do this in batches.
 		int batchSize = 10;
 		int batches = events.size() / batchSize;
 		for (int i = 0; i <= batches; i++) {
@@ -43,14 +47,14 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 			int to = (i == batches) ? events.size() : from + batchSize;
 			for (Event event : events.subList(from, to)) {
 				channel.put(event);
-//				System.out.println("Putting event to channel: " + event);
+				LOG.debug("Putting event to channel: {}",event);
 			}
 			txn.commit();
 			txn.close();
 			try {
 				sink.process();
 			} catch (EventDeliveryException e) {
-				e.printStackTrace();
+				LOG.error("Error processing events!",e);
 				throw new RuntimeException("Error processing events!", e);
 			}
 		}
@@ -79,12 +83,8 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 				+ "/searchevents";
 		paramters.put("hdfs.path", hdfsBasePath + "/%Y/%m/%d/%H");
 		paramters.put("hdfs.filePrefix", "searchevents");
-		// paramters.put("hdfs.inUsePrefix", "eventstemp");
-		// paramters.put("hdfs.inUseSuffix", ".tmp");
 		paramters.put("hdfs.fileType", "DataStream");
-		// paramters.put("hdfs.writeFormat", "Text");
 		paramters.put("hdfs.rollInterval", "0");
-		// paramters.put("hdfs.rollSize", "134217728");
 		paramters.put("hdfs.rollSize", "0");
 		paramters.put("hdfs.idleTimeout", "1");
 		paramters.put("hdfs.rollCount", "0");
@@ -92,7 +92,6 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 		paramters.put("hdfs.useLocalTimeStamp", "true");
 
 		Context sinkContext = new Context(paramters);
-		// sink.setName("HDFSEventSink-" + UUID.randomUUID().toString());
 		sink.configure(sinkContext);
 		Configurables.configure(channel, sinkContext);
 		sink.setChannel(channel);
