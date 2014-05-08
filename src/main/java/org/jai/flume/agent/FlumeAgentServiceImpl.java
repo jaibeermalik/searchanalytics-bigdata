@@ -162,7 +162,7 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	private void createAgent() {
 		final Map<String, String> properties = new HashMap<String, String>();
 		properties.put("channel.type", "memory");
-		properties.put("channel.capacity", "200");
+		properties.put("channel.capacity", "1000");
 		// a1.channels.c1.type = file
 		// a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
 		// a1.channels.c1.dataDirs = /mnt/flume/data
