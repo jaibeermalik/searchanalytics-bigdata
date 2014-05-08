@@ -4,13 +4,12 @@
 *.jar
 *.war
 *.ear
-/target
+target/
 .settings/
 build/
 .classpath
 .project
 *.log
 metastore_db
-hive
 userlogs
 TempStatsStore
