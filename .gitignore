@@ -10,6 +10,6 @@ build/
 .classpath
 .project
 *.log
-metastore_db
-userlogs
-TempStatsStore
+metastore_db/
+userlogs/
+TempStatsStore/
