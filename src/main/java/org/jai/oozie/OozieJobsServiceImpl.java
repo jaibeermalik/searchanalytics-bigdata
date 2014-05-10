@@ -66,10 +66,43 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			throw new RuntimeException(errMsg, e);
 		}
 	}
+	
+	@Override
+	public void startIndexTopCustomerQueryBundleCoordJob() {
+		try {
+			String workFlowRoot = setupTopCustomerQueryBundleJobApp();
+			submitTopQueriesBundleCoordJob(workFlowRoot);
+		} catch (OozieClientException | InterruptedException
+				| IllegalArgumentException | IOException e) {
+			String errMsg = "Error occured while starting bundle job!";
+			LOG.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
+		}
+	}
+	
+	private String setupTopCustomerQueryBundleJobApp() throws IOException {
+		String userName = System.getProperty("user.name");
+		String workFlowRoot = hadoopClusterService.getHDFSUri()
+				+ "/usr/" + userName +"/oozie/bundle-hive-to-es-topqueries";
+
+		// put oozie app in hadoop
+		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
+		Path workFlowRootPath = new Path(workFlowRoot);
+		fs.delete(workFlowRootPath, true);
+
+		File wfDir = new ClassPathResource("oozie/bundle-hive-to-es-topqueries")
+				.getFile();
+		LOG.debug("wfdir: {}", wfDir.getAbsolutePath());
+		FileUtil.copy(wfDir, fs, workFlowRootPath, false, new Configuration());
+		FileUtil.copy(new ClassPathResource("conf/hive-site.xml").getFile(),
+				fs, new Path(workFlowRoot), false, new Configuration());
+		return workFlowRoot;
+	}
 
 	private String setupHiveAddPartitionWorkflowApp() throws IOException {
+		String userName = System.getProperty("user.name");
 		String workFlowRoot = hadoopClusterService.getHDFSUri()
-				+ "/usr/tom/oozie/wf-hive-add-partition";
+				+ "/usr/" + userName + "/oozie/wf-hive-add-partition";
 
 		// put oozie app in hadoop
 		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
@@ -83,6 +116,86 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		FileUtil.copy(new ClassPathResource("conf/hive-site.xml").getFile(),
 				fs, new Path(workFlowRoot), false, new Configuration());
 		return workFlowRoot;
+	}
+	
+	private void submitTopQueriesBundleCoordJob(String workFlowRoot)
+			throws OozieClientException, InterruptedException {
+		// OozieClient client = LocalOozie.getCoordClient();
+		String oozieURL = System.getProperty("oozie.base.url");
+		LOG.debug("Oozie BaseURL is: {} ", oozieURL);
+		OozieClient client = new OozieClient(oozieURL);
+		Properties conf = client.createConfiguration();
+		conf.setProperty(OozieClient.BUNDLE_APP_PATH, workFlowRoot
+				+ "/load-and-index-customerqueries-bundle-configuration.xml");
+		conf.setProperty("coordAppPathLoadCustomerQueries", workFlowRoot
+				+ "/coord-app-load-customerqueries.xml");
+		conf.setProperty("coordAppPathIndexTopQueriesES", workFlowRoot
+				+ "/coord-app-index-topqueries-es.xml");
+		
+		conf.setProperty("nameNode", hadoopClusterService.getHDFSUri());
+		conf.setProperty("jobTracker", hadoopClusterService.getJobTRackerUri());
+		conf.setProperty("workflowRoot", workFlowRoot);
+		String userName = System.getProperty("user.name");
+		String oozieWorkFlowRoot = hadoopClusterService.getHDFSUri()
+				+ "/usr/" + userName +"/oozie";
+		conf.setProperty("oozieWorkflowRoot", oozieWorkFlowRoot);
+		Date now = new Date();
+		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(now));
+		conf.setProperty("jobEnd", DateUtils.formatDateOozieTZ(new DateTime()
+				.plusHours(2).toDate()));
+		conf.setProperty("initialDataset", DateUtils.formatDateOozieTZ(now));
+		conf.setProperty("jobStartIndex", DateUtils.formatDateOozieTZ(now));
+		conf.setProperty("tzOffset", "1");
+
+		// submit and start the workflow job
+		String jobId = client.submit(conf);
+
+		LOG.debug("Workflow job submitted");
+		// wait until the workflow job finishes printing the status every 10
+		// seconds
+		int retries = 3;
+		for (int i = 1; i <= retries; i++) {
+			// Sleep 60 sec./ 3 mins
+			Thread.sleep(60 * 1000);
+			
+			CoordinatorJob coordJobInfo = client.getCoordJobInfo(jobId);
+			LOG.debug("Workflow job running ...");
+			LOG.debug("coordJobInfo Try: {}", i);
+			LOG.debug("coordJobInfo StartTime: {}", coordJobInfo.getStartTime());
+			LOG.debug("coordJobInfo NextMaterizedTime: {}",
+					coordJobInfo.getNextMaterializedTime());
+			LOG.debug("coordJobInfo EndTime: {}", coordJobInfo.getEndTime());
+			LOG.debug("coordJobInfo Frequency: {}", coordJobInfo.getFrequency());
+			LOG.debug("coordJobInfo ConsoleURL: {}",
+					coordJobInfo.getConsoleUrl());
+			LOG.debug("coordJobInfo Status: {}", coordJobInfo.getStatus());
+			LOG.debug("coordJobInfo ActionConsoleURL: {}", coordJobInfo
+					.getActions().get(0).getConsoleUrl());
+			LOG.debug("coordJobInfo ActionErrorMessage: {}", coordJobInfo
+					.getActions().get(0).getErrorMessage());
+			if(coordJobInfo.getStatus() == Job.Status.RUNNING)
+			{
+				//Wait three times to see the running state is stable..then it is fine.
+				//Job will keep running even if hive action fails.
+				if(i == 3)
+				{
+					LOG.info("Coord Job in running state!");
+					break;
+				}
+				else
+				{
+					continue;
+				}
+			}
+			else if(coordJobInfo.getStatus() == Job.Status.PREMATER || coordJobInfo.getStatus() == Job.Status.PREP)
+			{
+				//still preparing.
+				continue;
+			}else
+			{
+				throw new RuntimeException("Error occured while running coord job!");
+			}
+		}
 	}
 
 	private void submitCoordJob(String workFlowRoot)

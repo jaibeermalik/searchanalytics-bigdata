@@ -62,4 +62,15 @@ public class OozieJobsServiceImplTest extends
 		System.out.println("totalRowCount : " + totalRowCount);
 		assertTrue(totalRowCount > 0);
 	}
+	
+	@Test
+	public void startIndexTopCustomerQueryBundleCoordJob() throws OozieClientException, InterruptedException,
+			IllegalArgumentException, IOException {
+		prepareHiveData();
+		 oozieJobsService.startIndexTopCustomerQueryBundleCoordJob();
+		System.out.println("Bundle job completed ...");
+		int totalRowCount = hiveSearchClicksService.getTotalRowCount("search", "search_customerquery");
+		System.out.println("totalRowCount : " + totalRowCount);
+		assertTrue(totalRowCount > 0);
+	}
 }

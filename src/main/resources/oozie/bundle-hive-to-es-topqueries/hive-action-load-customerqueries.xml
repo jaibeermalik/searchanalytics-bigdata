@@ -9,11 +9,11 @@
 				<delete path="${workflowRoot}/output" />
 				<mkdir path="${workflowRoot}/output" />
 			</prepare>
-			<job-xml>${oozieWorkflowRoot}/hive-site.xml</job-xml>
+			<job-xml>${workflowRoot}/hive-site.xml</job-xml>
 			<configuration>
 				<property>
 					<name>oozie.hive.defaults</name>
-					<value>${oozieWorkflowRoot}/hive-site.xml</value>
+					<value>${workflowRoot}/hive-site.xml</value>
 				</property>
 			</configuration>
 			<script>load_customer_queries_table_search_customerquery.q</script>
