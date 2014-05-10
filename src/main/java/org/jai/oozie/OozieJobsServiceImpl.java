@@ -2,7 +2,9 @@ package org.jai.oozie;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -16,8 +18,10 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.local.LocalOozie;
+import org.apache.oozie.client.WorkflowJob.Status;
+import org.apache.oozie.service.CallbackService;
 import org.apache.oozie.service.Services;
+import org.apache.oozie.service.XLogService;
 import org.apache.oozie.util.DateUtils;
 import org.jai.hadoop.HadoopClusterService;
 import org.joda.time.DateTime;
@@ -39,22 +43,8 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 	@Override
 	public void startHiveAddPartitionCoordJob() {
 		try {
-			String workFlowRoot = hadoopClusterService.getHDFSUri()
-					+ "/usr/tom/oozie/wf-hive-add-partition";
-
-			// put oozie app in hadoop
-			DistributedFileSystem fs = hadoopClusterService.getFileSystem();
-			fs.delete(new Path(workFlowRoot), true);
-
-			File wfDir = new ClassPathResource("oozie/wf-hive-add-partition")
-					.getFile();
-			LOG.debug("wfdir: {}", wfDir.getAbsolutePath());
-			FileUtil.copy(wfDir, fs, new Path(workFlowRoot), false,
-					new Configuration());
-
-			// submitCoordJob(workFlowRoot);
-			submitWorkflowJob(workFlowRoot);
-
+			String workFlowRoot = setupHiveAddPartitionWorkflowApp();
+			submitCoordJob(workFlowRoot);
 		} catch (OozieClientException | InterruptedException
 				| IllegalArgumentException | IOException e) {
 			String errMsg = "Error occured while starting hive add partition coord job!";
@@ -62,10 +52,45 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			throw new RuntimeException(errMsg, e);
 		}
 	}
+	
+	@Override
+	public void runHiveAddPartitionWorkflowJob() {
+		try {
+			String workFlowRoot = setupHiveAddPartitionWorkflowApp();
+			submitWorkflowJob(workFlowRoot);
+
+		} catch (OozieClientException | InterruptedException
+				| IllegalArgumentException | IOException e) {
+			String errMsg = "Error occured while starting hive add partition Workflow job!";
+			LOG.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
+		}
+	}
+
+	private String setupHiveAddPartitionWorkflowApp() throws IOException {
+		String workFlowRoot = hadoopClusterService.getHDFSUri()
+				+ "/usr/tom/oozie/wf-hive-add-partition";
+
+		// put oozie app in hadoop
+		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
+		Path workFlowRootPath = new Path(workFlowRoot);
+		fs.delete(workFlowRootPath, true);
+
+		File wfDir = new ClassPathResource("oozie/wf-hive-add-partition")
+				.getFile();
+		LOG.debug("wfdir: {}", wfDir.getAbsolutePath());
+		FileUtil.copy(wfDir, fs, workFlowRootPath, false, new Configuration());
+		FileUtil.copy(new ClassPathResource("conf/hive-site.xml").getFile(),
+				fs, new Path(workFlowRoot), false, new Configuration());
+		return workFlowRoot;
+	}
 
 	private void submitCoordJob(String workFlowRoot)
 			throws OozieClientException, InterruptedException {
-		OozieClient client = LocalOozie.getCoordClient();
+		// OozieClient client = LocalOozie.getCoordClient();
+		String oozieURL = System.getProperty("oozie.base.url");
+		LOG.debug("Oozie BaseURL is: {} ", oozieURL);
+		OozieClient client = new OozieClient(oozieURL);
 		Properties conf = client.createConfiguration();
 		conf.setProperty(OozieClient.COORDINATOR_APP_PATH, workFlowRoot
 				+ "/coord-app-hive-add-partition.xml");
@@ -80,14 +105,19 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		conf.setProperty("tzOffset", "1");
 
 		// submit and start the workflow job
-		String jobId = client.run(conf);// submit(conf);
+		String jobId = client.submit(conf);
 
 		LOG.debug("Workflow job submitted");
 		// wait until the workflow job finishes printing the status every 10
 		// seconds
-		CoordinatorJob coordJobInfo = client.getCoordJobInfo(jobId);
-		while (coordJobInfo.getStatus() == Job.Status.RUNNING) {
+		int retries = 3;
+		for (int i = 1; i <= retries; i++) {
+			// Sleep 60 sec./ 3 mins
+			Thread.sleep(60 * 1000);
+			
+			CoordinatorJob coordJobInfo = client.getCoordJobInfo(jobId);
 			LOG.debug("Workflow job running ...");
+			LOG.debug("coordJobInfo Try: {}", i);
 			LOG.debug("coordJobInfo StartTime: {}", coordJobInfo.getStartTime());
 			LOG.debug("coordJobInfo NextMaterizedTime: {}",
 					coordJobInfo.getNextMaterializedTime());
@@ -100,62 +130,126 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 					.getActions().get(0).getConsoleUrl());
 			LOG.debug("coordJobInfo ActionErrorMessage: {}", coordJobInfo
 					.getActions().get(0).getErrorMessage());
-			Thread.sleep(10 * 1000);
+			if(coordJobInfo.getStatus() == Job.Status.RUNNING)
+			{
+				//Wait three times to see the running state is stable..then it is fine.
+				//Job will keep running even if hive action fails.
+				if(i == 3)
+				{
+					LOG.info("Coord Job in running state!");
+					break;
+				}
+				else
+				{
+					continue;
+				}
+			}
+			else if(coordJobInfo.getStatus() == Job.Status.PREMATER || coordJobInfo.getStatus() == Job.Status.PREP)
+			{
+				//still preparing.
+				continue;
+			}else
+			{
+				throw new RuntimeException("Error occured while running coord job!");
+			}
 		}
 	}
 
 	private void submitWorkflowJob(String workFlowRoot)
 			throws OozieClientException, InterruptedException {
-		OozieClient client = LocalOozie.getClient();
+		String oozieURL = System.getProperty("oozie.base.url");
+		LOG.debug("Oozie BaseURL is: {} ", oozieURL);
+		OozieClient client = new OozieClient(oozieURL);
+
+		DateTime now = new DateTime();
+		int monthOfYear = now.getMonthOfYear();
+		int dayOfMonth = now.getDayOfMonth();
+		int hourOfDay = now.getHourOfDay();
+		String year = String.valueOf(now.getYear());
+		String month = monthOfYear < 10 ? "0" + String.valueOf(monthOfYear)
+				: String.valueOf(monthOfYear);
+		String day = dayOfMonth < 10 ? "0" + String.valueOf(dayOfMonth)
+				: String.valueOf(dayOfMonth);
+		String hour = hourOfDay < 10 ? "0" + String.valueOf(hourOfDay) : String
+				.valueOf(hourOfDay);
+
 		Properties conf = client.createConfiguration();
 		conf.setProperty(OozieClient.APP_PATH, workFlowRoot
 				+ "/hive-action-add-partition.xml");
 		conf.setProperty("nameNode", hadoopClusterService.getHDFSUri());
 		conf.setProperty("jobTracker", hadoopClusterService.getJobTRackerUri());
 		conf.setProperty("workflowRoot", workFlowRoot);
-		Date now = new Date();
-		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(now));
-		conf.setProperty("jobEnd", DateUtils.formatDateOozieTZ(new DateTime()
-				.plusHours(2).toDate()));
-		conf.setProperty("initialDataset", DateUtils.formatDateOozieTZ(now));
-		conf.setProperty("tzOffset", "1");
+		conf.setProperty("YEAR", year);
+		conf.setProperty("MONTH", month);
+		conf.setProperty("DAY", day);
+		conf.setProperty("HOUR", hour);
+		conf.setProperty("oozie.use.system.libpath", "true");
 
 		// submit and start the workflow job
+		client.setDebugMode(1);
+		// client.dryrun(conf);
 		String jobId = client.run(conf);// submit(conf);
 
 		LOG.debug("Workflow job submitted");
 		// wait until the workflow job finishes printing the status every 10
 		// seconds
-		WorkflowJob jobInfo = client.getJobInfo(jobId);
-		int i = 1;
-		statuscheck: while (jobInfo.getStatus() != WorkflowJob.Status.SUCCEEDED) {
+		int retries = 3;
+		for (int i = 1; i <= retries; i++) {
+			// Sleep 60 sec./ 3 mins
+			Thread.sleep(60 * 1000);
+
+			WorkflowJob jobInfo = client.getJobInfo(jobId);
+			Status jobStatus = jobInfo.getStatus();
 			LOG.debug("Workflow job running ...");
-			LOG.debug("coordJobInfo StartTime: {}", jobInfo.getStartTime());
-			LOG.debug("coordJobInfo EndTime: {}", jobInfo.getEndTime());
-			LOG.debug("coordJobInfo ConsoleURL: {}", jobInfo.getConsoleUrl());
-			LOG.debug("coordJobInfo Status: {}", jobInfo.getStatus());
+			LOG.debug("HiveActionWorkflowJob Status Try: {}", i);
+			LOG.debug("HiveActionWorkflowJob Id: {}", jobInfo.getId());
+			LOG.debug("HiveActionWorkflowJob StartTime: {}",
+					jobInfo.getStartTime());
+			LOG.debug("HiveActionWorkflowJob EndTime: {}", jobInfo.getEndTime());
+			LOG.debug("HiveActionWorkflowJob ConsoleURL: {}",
+					jobInfo.getConsoleUrl());
+			LOG.debug("HiveActionWorkflowJob Status: {}", jobInfo.getStatus());
+
 			WorkflowAction workflowAction = jobInfo.getActions().get(0);
-			LOG.debug("coordJobInfo Action consoleURL: {}",
+
+			LOG.debug("HiveActionWorkflowJob Action consoleURL: {}",
 					workflowAction.getConsoleUrl());
-			LOG.debug("coordJobInfo Action Name: {}", workflowAction.getName());
-			LOG.debug("coordJobInfo Action error message: {}",
+			LOG.debug("HiveActionWorkflowJob Action Name: {}",
+					workflowAction.getName());
+			LOG.debug("HiveActionWorkflowJob Action error message: {}",
 					workflowAction.getErrorMessage());
-			LOG.debug("coordJobInfo Action Status: {}",
+			LOG.debug("HiveActionWorkflowJob Action Status: {}",
 					workflowAction.getStats());
-			LOG.debug("coordJobInfo Action data: {}", workflowAction.getData());
-			LOG.debug("coordJobInfo Action conf: {}", workflowAction.getConf());
-			LOG.debug("coordJobInfo Action retries: {}",
+			LOG.debug("HiveActionWorkflowJob Action data: {}",
+					workflowAction.getData());
+			LOG.debug("HiveActionWorkflowJob Action conf: {}",
+					workflowAction.getConf());
+			LOG.debug("HiveActionWorkflowJob Action retries: {}",
 					workflowAction.getRetries());
-			LOG.debug("coordJobInfo Action id: {}", workflowAction.getId());
-			LOG.debug("coordJobInfo Action start time: {}",
+			LOG.debug("HiveActionWorkflowJob Action id: {}",
+					workflowAction.getId());
+			LOG.debug("HiveActionWorkflowJob Action start time: {}",
 					workflowAction.getStartTime());
-			LOG.debug("coordJobInfo Action end time: {}",
+			LOG.debug("HiveActionWorkflowJob Action end time: {}",
 					workflowAction.getEndTime());
-			LOG.debug("coordJobInfo Oozie Url: {}", client.getOozieUrl());
-			Thread.sleep(10 * 1000);
-			i++;
-			if (i == 2)
-				break statuscheck;
+			LOG.debug("HiveActionWorkflowJob Oozie Url: {}",
+					client.getOozieUrl());
+
+			if (jobStatus == WorkflowJob.Status.SUCCEEDED) {
+				LOG.info("Oozie workflow job was successful!" + jobStatus);
+				break;
+			} else if (jobStatus == WorkflowJob.Status.PREP
+					|| jobStatus == WorkflowJob.Status.RUNNING) {
+				if (i == retries) {
+					throw new RuntimeException("Error executing workflow job!"
+							+ jobStatus);
+				} else {
+					continue;
+				}
+			} else {
+				throw new RuntimeException("Error executing workflow job!"
+						+ jobStatus);
+			}
 		}
 	}
 
@@ -163,14 +257,14 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 	public void setup() {
 
 		// Clean up and set up oozie home stuff
-
 		File oozieHome = new File("target/ooziehome");
 		File oozieData = new File(oozieHome, "data");
 		System.setProperty(Services.OOZIE_HOME_DIR, oozieHome.getAbsolutePath());
 		System.setProperty("oozie.data.dir", oozieData.getAbsolutePath());
 
 		try {
-			oozieHome.delete();
+			// Fully delete dir
+			FileUtils.deleteDirectory(oozieHome);
 			oozieHome.mkdir();
 			File oozieConf = new File(oozieHome, "conf");
 			oozieConf.mkdir();
@@ -179,41 +273,59 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			File oozieHadoopConf = new File(oozieConf, "hadoop-conf");
 			oozieHadoopConf.mkdir();
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/core-site.xml").getFile(), oozieConf);
+					"conf/core-site.xml").getFile(), oozieHadoopConf);
+			FileUtils.copyFileToDirectory(new ClassPathResource(
+					"conf/mapred-site.xml").getFile(), oozieHadoopConf);
 			File oozieActionConf = new File(oozieConf, "action-conf");
 			oozieActionConf.mkdir();
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/hive-site.xml").getFile(), oozieConf);
+					"conf/hive-site.xml").getFile(), oozieActionConf);
 			oozieData.mkdir();
+
+			// FS set up
+			String sharedLibPathString = "/usr/tom/share/lib/lib_20140414170412/";
+			// String sharedLibPathString = "/usr/tom/share/lib/";
+			Path sharedLibPath = new Path(sharedLibPathString);
+			DistributedFileSystem fs = hadoopClusterService.getFileSystem();
+			fs.mkdirs(sharedLibPath);
+			Path ooziePath = new Path(sharedLibPath + "/oozie");
+			fs.mkdirs(ooziePath);
+			Path hivePath = new Path(sharedLibPath + "/hive");
+			fs.mkdirs(hivePath);
+
+			for (String oozieJar : listAllOozieLibs()) {
+				LOG.debug("Adding jar file to shared lib: {}", oozieJar);
+				if (oozieJar.contains("hive")) {
+					FileUtil.copy(new File(oozieJar), fs, hivePath, false,
+							new Configuration());
+				} else {
+					FileUtil.copy(new File(oozieJar), fs, ooziePath, false,
+							new Configuration());
+				}
+			}
+
 		} catch (IOException e) {
 			String errMsg = "Error setting up oozie home!";
 			LOG.error(errMsg, e);
 			throw new RuntimeException(errMsg, e);
 		}
 
-		// System.setProperty("oozie.service.JPAService.jdbc.driver",
-		// "org.apache.derby.jdbc.EmbeddedDriver");
-		// System.setProperty("oozie.service.JPAService.jdbc.url",
-		// "jdbc:derby:${oozie.data.dir}/oozie-db;create=true");
-		// System.setProperty("oozie.service.JPAService.jdbc.username", "sa");
-		// System.setProperty("oozie.service.JPAService.jdbc.password", "");
-		// System.setProperty("oozie.service.JPAService.create.db.schema",
-		// "true");
-		// System.setProperty("oozie.service.ActionService.executor.ext.classes",
-		// "org.apache.oozie.action.hadoop.HiveActionExecutor");
-		// System.setProperty("oozie.service.SchemaService.wf.ext.schemas",
-		// "hive-action-0.3.xsd,hive-action-0.4.xsd,hive-action-0.5.xsd,"
-		// + "oozie-sla-0.1.xsd,oozie-sla-0.2.xsd");
-		// System.setProperty("oozie.base.url", "http://localhost:54210");
-		System.setProperty("OOZIE_HTTP_HOSTNAME", "localhost");
-		System.setProperty("OOZIE_HTTP_PORT", "54210");
-		System.setProperty("oozie.data.dir", oozieData.getAbsolutePath());
-		System.setProperty("oozielocal.log", new File(
-				"target/logs/oozielocal.log").getAbsolutePath());
-
 		// Start local oozie.
 		try {
-			LocalOozie.start();
+
+			System.setProperty("oozie.data.dir", oozieData.getAbsolutePath());
+			System.setProperty("oozie.log.dir",
+					new File(oozieHome, "logs").getAbsolutePath());
+			System.setProperty(XLogService.LOG4J_FILE, "log4j.properties");
+
+			JaiLocalOozie.start();
+			String callbackBaseUrl = Services.get().getConf()
+					.get(CallbackService.CONF_BASE_URL);
+			LOG.debug("Callback base url is: {}", callbackBaseUrl);
+			String baseURL = callbackBaseUrl.substring(0,
+					callbackBaseUrl.lastIndexOf("/"));
+			Services.get().getConf().set("oozie.base.url", baseURL);
+			System.setProperty("oozie.base.url", baseURL);
 		} catch (Exception e) {
 			e.printStackTrace();
 			String errMsg = "Error occured while starting local oozie!";
@@ -222,9 +334,39 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		}
 	}
 
+	private List<String> listAllOozieLibs() {
+		List<String> oozieJars = new ArrayList<>();
+		final String pathSep = System.getProperty("path.separator");
+		final String list = System.getProperty("java.class.path");
+		for (final String path : list.split(pathSep)) {
+			final File file = new java.io.File(path);
+			if (file.isDirectory())
+				listDirectory(file, oozieJars);
+			else if (file.getName().endsWith(".jar")
+					&& (file.getName().contains("oozie") || file.getName()
+							.contains("hadoop"))) {
+				oozieJars.add(file.getAbsolutePath());
+			}
+		}
+		return oozieJars;
+	}
+
+	private void listDirectory(File fileDir, List<String> oozieJars) {
+		File list[] = fileDir.listFiles();
+		for (File file : list) {
+			if (file.isDirectory())
+				listDirectory(file, oozieJars);
+			else if (file.getName().endsWith(".jar")
+					&& (file.getName().contains("oozie") || file.getName()
+							.contains("oozie"))) {
+				oozieJars.add(file.getAbsolutePath());
+			}
+		}
+	}
+
 	@Override
 	public void shutdown() {
-		LocalOozie.stop();
+		JaiLocalOozie.stop();
 	}
 
 }

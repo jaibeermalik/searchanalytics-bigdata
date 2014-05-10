@@ -37,6 +37,7 @@
 			System mode for Oozie at startup.
 		</description>
 	</property>
+	<!-- -->
 	<property>
 		<name>oozie.services</name>
 		<value>
@@ -60,6 +61,9 @@
 			org.apache.oozie.service.DBLiteWorkflowStoreService,
 			org.apache.oozie.service.CallbackService,
 			org.apache.oozie.service.ActionService,
+
+			org.apache.oozie.service.JobsConcurrencyService,
+
 			org.apache.oozie.service.ShareLibService,
 			org.apache.oozie.service.ActionCheckerService,
 			org.apache.oozie.service.RecoveryService,
@@ -72,11 +76,12 @@
 			org.apache.oozie.service.PauseTransitService,
 			org.apache.oozie.service.GroupsService,
 			org.apache.oozie.service.ProxyUserService,
-			org.apache.oozie.service.XLogStreamingService,
-			org.apache.oozie.service.JobsConcurrencyService
+			org.apache.oozie.service.XLogStreamingService
+
 		</value>
 		<description>
-			All services to be created and managed by Oozie Services singleton.
+			All services to be created and managed by Oozie Services
+			singleton.
 			Class names must be separated by commas.
 		</description>
 	</property>
@@ -94,13 +99,14 @@
 		<name>oozie.service.EventHandlerService.filter.app.types</name>
 		<value>workflow_job, coordinator_action</value>
 		<description>
-			The app-types among workflow/coordinator/bundle job/action for which
+			The app-types among workflow/coordinator/bundle
+			job/action for which
 			for which events system is enabled.
 		</description>
 	</property>
 	<property>
 		<name>oozie.service.PurgeService.older.than</name>
-		<value>30</value>
+		<value>1</value>
 		<description>
 			Jobs older than this value, in days, will be purged by
 			the PurgeService.
@@ -262,8 +268,7 @@
 
 	<property>
 		<name>oozie.service.HadoopAccessorService.jobTracker.whitelist</name>
-		<value>
-		</value>
+		<value></value>
 		<description>
 			Whitelisted job tracker for Oozie service.
 		</description>
@@ -277,9 +282,10 @@
 		</description>
 	</property>
 
+	<!-- -->
 	<property>
 		<name>oozie.service.HadoopAccessorService.hadoop.configurations</name>
-		<value>*=/etc/hadoop/conf</value>
+		<value>*=./hadoop-conf</value>
 		<description>
 			Comma separated AUTHORITY=HADOOP_CONF_DIR, where
 			AUTHORITY is the
@@ -302,7 +308,7 @@
 
 	<property>
 		<name>oozie.service.WorkflowAppService.system.libpath</name>
-		<value>/user/${user.name}/share/lib</value>
+		<value>/usr/${user.name}/share/lib</value>
 		<description>
 			System library path to use for workflow applications.
 			This path is added to workflow application if their job properties
@@ -310,7 +316,6 @@
 			the property 'oozie.use.system.libpath' to true.
 		</description>
 	</property>
-
 	<property>
 		<name>use.system.libpath.for.mapreduce.and.pig.jobs</name>
 		<value>false</value>
@@ -414,5 +419,24 @@
 			to Hadoop's
 			KerberosName for more details.
 		</description>
+	</property>
+
+	<property>
+		<name>oozie.service.ProxyUserService.proxyuser.oozie.hosts</name>
+		<value>*</value>
+	</property>
+
+	<property>
+		<name>oozie.service.ProxyUserService.proxyuser.oozie.groups</name>
+		<value>*</value>
+	</property>
+	<property>
+		<name>oozie.service.ProxyUserService.proxyuser.tom.hosts</name>
+		<value>*</value>
+	</property>
+
+	<property>
+		<name>oozie.service.ProxyUserService.proxyuser.tom.groups</name>
+		<value>*</value>
 	</property>
 </configuration>

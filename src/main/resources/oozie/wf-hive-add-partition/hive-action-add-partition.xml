@@ -1,13 +1,14 @@
-<workflow-app xmlns="uri:oozie:workflow:0.3" name="hive-add-partition-searchevents-wf">
+<workflow-app xmlns="uri:oozie:workflow:0.4" name="hive-add-partition-searchevents-wf">
   <start to="hive-add-partition-searchevents"/>
-  <action name="hive-add-partition-searchevents" retry-max="2" retry-interval="1">
-	<hive xmlns="uri:oozie:hive-action:0.3">
+  <action name="hive-add-partition-searchevents" retry-max="1" retry-interval="1">
+	<hive xmlns="uri:oozie:hive-action:0.4" >
             <job-tracker>${jobTracker}</job-tracker>
                   <name-node>${nameNode}</name-node>
                         <prepare>
                                 <delete path="${workflowRoot}/output"/>
                                 <mkdir path="${workflowRoot}/output"/>
                         </prepare>
+                        <!--  -->
                         <job-xml>${workflowRoot}/hive-site.xml</job-xml>
                         <configuration>
                         	<property>
@@ -16,7 +17,6 @@
                                 </property>
                         </configuration>
                         <script>add_partition_hive_searchevents_script.q</script>
-                        <param>WFINPUT=${wfInput}</param>
                         <param>YEAR=${YEAR}</param>
                         <param>MONTH=${MONTH}</param>
                         <param>DAY=${DAY}</param>

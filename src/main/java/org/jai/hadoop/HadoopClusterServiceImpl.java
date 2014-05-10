@@ -3,8 +3,8 @@ package org.jai.hadoop;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.MiniMRCluster;
@@ -61,16 +61,25 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 			return;
 		}
 
-		String testName = "trial";
-		File baseDir = new File("target/hdfs/" + testName).getAbsoluteFile();
-		FileUtil.fullyDelete(baseDir);
+		String testName = "jaitest";
+		File baseDir = new File("target/hdfs/" + testName);
+		File logsDir = new File("target/logs");
+		File hadoopTmpDir = new File("target/hadooptmp");
+
+		try {
+			FileUtils.deleteDirectory(baseDir);
+			FileUtils.deleteDirectory(logsDir);
+			FileUtils.deleteDirectory(hadoopTmpDir);
+		} catch (IOException e1) {
+			throw new RuntimeException(
+					"Error occured while deleting hadoop dir fully!");
+		}
+
 		Configuration configuration = new Configuration();
 		configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR,
 				baseDir.getAbsolutePath());
-		configuration.set("hadoop.log.dir",
-				new File("target/logs").getAbsolutePath());
-		configuration.set("hadoop.tmp.dir",
-				new File("target/hadooptmp").getAbsolutePath());
+		configuration.set("hadoop.log.dir", logsDir.getAbsolutePath());
+		configuration.set("hadoop.tmp.dir", hadoopTmpDir.getAbsolutePath());
 		configuration.set("hadoop.proxyuser.oozie.hosts", "*");
 		configuration.set("hadoop.proxyuser.oozie.groups", "*");
 		configuration.set("hadoop.proxyuser.tom.hosts", "*");
@@ -78,10 +87,10 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		configuration.set("hadoop.proxyuser.mapred.hosts", "*");
 		configuration.set("hadoop.proxyuser.mapred.groups", "*");
 
-		System.setProperty("hadoop.log.dir",
-				new File("target/logs").getAbsolutePath());
-		System.setProperty("hadoop.tmp.dir",
-				new File("target/hadooptmp").getAbsolutePath());
+		System.setProperty("hadoop.log.dir", logsDir.getAbsolutePath());
+		System.setProperty("hadoop.tmp.dir", hadoopTmpDir.getAbsolutePath());
+		System.setProperty("hadoop.proxyuser.tom.groups", "*");
+		System.setProperty("hadoop.proxyuser.tom.hosts", "*");
 
 		MiniDFSCluster.Builder builder = new MiniDFSCluster.Builder(
 				configuration);
@@ -116,12 +125,9 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		configuration.set("mapreduce.task.tmp.dir", new File(
 				"target/mapredtaskdir").getAbsolutePath());
 		configuration.set("hadoop.job.history.location", "none");
-		configuration.set("hadoop.log.dir",
-				new File("target/logs").getAbsolutePath());
+		// configuration.set("mapreduce.framework.name", "yarn");
 
 		// Job history won't start NPE
-		System.setProperty("hadoop.log.dir",
-				new File("target/logs").getAbsolutePath());
 		System.setProperty("mapred.local.dir",
 				new File("target/mapreddir").getAbsolutePath());
 		System.setProperty("dfs.datanode.hostname", "localhost.localdomain");
@@ -137,10 +143,12 @@ public class HadoopClusterServiceImpl implements HadoopClusterService {
 		System.setProperty("mapreduce.task.tmp.dir", new File(
 				"target/mapredtaskdir").getAbsolutePath());
 		System.setProperty("hadoop.job.history.location", "none");
-		System.setProperty("hadoop.log.dir",
-				new File("target/logs").getAbsolutePath());
+		// System.setProperty("mapreduce.framework.name", "yarn");
 
 		try {
+			System.setProperty("test.build.data", new File(
+					"target/mrclustertestbuild").getAbsolutePath());
+
 			DistributedFileSystem fileSystem = miniDFSCluster.getFileSystem();
 			// miniMRCluster = new MiniMRCluster(1, fileSystem.getUri()
 			// .toString(), 1, null, null, new JobConf(configuration));
