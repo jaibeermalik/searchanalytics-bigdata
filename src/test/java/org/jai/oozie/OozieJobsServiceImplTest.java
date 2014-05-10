@@ -1,10 +1,16 @@
 package org.jai.oozie;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.OozieClientException;
 import org.jai.hadoop.HadoopClusterService;
+import org.jai.hive.HiveSearchClicksService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,16 +21,45 @@ public class OozieJobsServiceImplTest extends
 	private OozieJobsService oozieJobsService;
 	@Autowired
 	private HadoopClusterService hadoopClusterService;
+	@Autowired
+	private HiveSearchClicksService hiveSearchClicksService;
+	
+	@Before
+	public void prepareHive() {
+		hiveSearchClicksService.setup();
+	}
+
+	private void prepareHiveData() {
+		try {
+			hadoopClusterService.getFileSystem().delete(
+					new Path("/searchevents"), true);
+			generateSearchAnalyticsDataService
+					.generateAndPushSearchEvents(10);
+		} catch (IllegalArgumentException | IOException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 
 	@Test
-	public void test() throws OozieClientException, InterruptedException,
+	public void testAddHiveActionWorkflowJob() throws OozieClientException, InterruptedException,
 			IllegalArgumentException, IOException {
-		// oozieJobsService.setup();
-		// oozieJobsService.startHiveAddPartitionCoordJob();
-		// oozieJobsService.startHiveAddPartitionCoordJob();
-		// oozieJobsService.setup();
-		// print the final status o the workflow job
+		prepareHiveData();
+		 oozieJobsService.runHiveAddPartitionWorkflowJob();
 		System.out.println("Workflow job completed ...");
-		// oozieJobsService.shutdown();
+		int totalRowCount = hiveSearchClicksService.getTotalRowCount("search", "search_clicks");
+		System.out.println("totalRowCount : " + totalRowCount);
+		assertTrue(totalRowCount > 0);
+	}
+	
+	@Test
+	public void startHiveAddPartitionCoordJob() throws OozieClientException, InterruptedException,
+			IllegalArgumentException, IOException {
+		prepareHiveData();
+		 oozieJobsService.startHiveAddPartitionCoordJob();
+		System.out.println("Coord job completed ...");
+		int totalRowCount = hiveSearchClicksService.getTotalRowCount("search", "search_clicks");
+		System.out.println("totalRowCount : " + totalRowCount);
+		assertTrue(totalRowCount > 0);
 	}
 }

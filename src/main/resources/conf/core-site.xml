@@ -16,6 +16,14 @@
     <name>hadoop.proxyuser.oozie.groups</name>
     <value>*</value>
   </property>
+  <property>
+    <name>hadoop.proxyuser.tom.hosts</name>
+    <value>*</value>
+  </property>
+  <property>
+    <name>hadoop.proxyuser.tom.groups</name>
+    <value>*</value>
+  </property>
 
   <!-- HTTPFS proxy user setting -->
   <property>

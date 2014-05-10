@@ -17,7 +17,9 @@
 		<!-- <hadoop.version>2.4.0</hadoop.version> -->
 		<hadoop.version>2.3.0-cdh5.0.0</hadoop.version>
 		<hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version>
-		<oozie.hadoop.version>2.3.0-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version>
+		<!-- <hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version>  -->
+		<oozie.hadoop.version>2.3.0-mr1-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version>
+		<!--  <oozie.hadoop.version>2.3.0-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version> -->
 		<oozie.version>4.0.0-cdh5.0.0</oozie.version>
 		<log4j.version>1.2.16</log4j.version>
 		<slf4j.version>1.7.5</slf4j.version>
@@ -255,6 +257,26 @@
 			<version>${oozie.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.oozie.test</groupId>
+			<artifactId>oozie-mini</artifactId>
+			<version>${oozie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.oozie</groupId>
+			<artifactId>oozie-sharelib-hive</artifactId>
+			<version>${oozie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.oozie</groupId>
+			<artifactId>oozie-sharelib-oozie</artifactId>
+			<version>${oozie.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.oozie</groupId>
+			<artifactId>oozie-hadoop-utils</artifactId>
+			<version>${oozie.hadoop.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>11.0.2</version>
@@ -325,10 +347,30 @@
 			<artifactId>hadoop-minicluster</artifactId>
 			<version>${hadoop.mr1.version}</version>
 		</dependency>
+		<!-- 
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-yarn</artifactId>
+			<version>${hadoop.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-yarn-api</artifactId>
+			<version>${hadoop.version}</version>
+		</dependency>
+		 -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-hadoop</artifactId>
 			<version>1.0.2.RELEASE-hadoop22</version>
+			<!-- 
+			<exclusions>
+				<exclusion>
+						<groupId>org.apache.hadoop</groupId>
+						<artifactId>hadoop-yarn-common</artifactId>
+				</exclusion>
+			</exclusions>
+			 -->
 		</dependency>
 		<!-- 
 		<dependency>
@@ -353,7 +395,7 @@
 			<artifactId>jdk.tools</artifactId>
 			<version>1.7</version>
 			<scope>system</scope>
-			<systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+<systemPath>/usr/java/jdk1.7.0_51/lib/tools.jar</systemPath>
 		</dependency>
 		<!-- Testing dependencies -->
 		<dependency>

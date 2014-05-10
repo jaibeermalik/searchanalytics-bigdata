@@ -2,52 +2,74 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
 <configuration>
-<property>
-  <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=./target/metastore_db;create=true</value>
-  <description>JDBC connect string for a JDBC metastore</description>
-</property>
 
-<property>
-  <name>javax.jdo.option.ConnectionDriverName</name>
-  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
-  <description>Driver class name for a JDBC metastore</description>
-</property>
-<property>
-  <name>datanucleus.autoCreateSchema</name>
-  <value>true</value>
-</property>
+	<!-- <property> <name></name> <value></value> </property> -->
+	<property>
+		<name>hive.start.cleanup.scratchdir</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>hive.exec.scratchdir</name>
+		<value>/tmp/hivetmp</value>
+	</property>
+	<property>
+		<name>hive.exec.local.scratchdir</name>
+		<value>/tmp/hiveusrtmp</value>
+	</property>
+	<property>
+		<name>hive.metastore.warehouse.dir</name>
+		<value>/tmp/hivewarehouse</value>
+	</property>
 
-<property>
-  <name>datanucleus.fixedDatastore</name>
-  <value>true</value>
-</property>
+	<property>
+		<name>javax.jdo.option.ConnectionURL</name>
+		<value>jdbc:derby:;databaseName=./target/hive/metastore_db;create=true
+		</value>
+		<description>JDBC connect string for a JDBC metastore</description>
+	</property>
 
-<property>
-  <name>datanucleus.autoStartMechanism</name> 
-  <value>SchemaTable</value>
-</property> 
+	<property>
+		<name>javax.jdo.option.ConnectionDriverName</name>
+		<value>org.apache.derby.jdbc.EmbeddedDriver</value>
+		<description>Driver class name for a JDBC metastore</description>
+	</property>
+	<property>
+		<name>datanucleus.autoCreateSchema</name>
+		<value>true</value>
+	</property>
 
-<property>
-  <name>hive.metastore.uris</name>
-  <value>thrift://localhost:10234</value>
-  <description>IP address (or fully-qualified domain name) and port of the metastore host</description>
-</property>
-<property>
-  <name>hive.support.concurrency</name>
-  <description>Enable Hive's Table Lock Manager Service</description>
-  <value>true</value>
-</property>
+	<property>
+		<name>datanucleus.fixedDatastore</name>
+		<value>true</value>
+	</property>
 
-<property>
-  <name>hive.zookeeper.quorum</name>
-  <description>Zookeeper quorum used by Hive's Table Lock Manager</description>
-  <value>localhost</value>
-</property>
+	<property>
+		<name>datanucleus.autoStartMechanism</name>
+		<value>SchemaTable</value>
+	</property>
 
-<property>
-  <name>hive.aux.jars.path</name>
-  <value></value>
-</property>
+	<property>
+		<name>hive.metastore.uris</name>
+		<value>thrift://localhost:10234</value>
+		<description>IP address (or fully-qualified domain name) and port of
+			the metastore host</description>
+	</property>
+	<property>
+		<name>hive.support.concurrency</name>
+		<description>Enable Hive's Table Lock Manager Service</description>
+		<value>true</value>
+	</property>
+
+	<property>
+		<name>hive.zookeeper.quorum</name>
+		<description>Zookeeper quorum used by Hive's Table Lock Manager
+		</description>
+		<value>localhost</value>
+	</property>
+
+	<property>
+		<name>hive.aux.jars.path</name>
+		<value></value>
+	</property>
 
 </configuration>

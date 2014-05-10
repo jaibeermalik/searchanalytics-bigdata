@@ -55,11 +55,14 @@
 	</appender>
 
 	<!-- only log info events in log file, meaning all events will be logged -->
+	
+	<!-- 
 	<logger name="org.jai.search.analytics.GenerateSearchAnalyticsDataImpl">
 		<appender-ref ref="ANALYTICS" />
 		<level value="INFO" />
 	</logger>
-
+ -->
+ 
 	<!-- Need syslog server for this. <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender"> 
 		<syslogHost>remote_home</syslogHost> <facility>AUTH</facility> <suffixPattern>[%thread] 
 		%logger %msg</suffixPattern> </appender> <logger name="com.jai.search.analytics"> 
@@ -83,4 +86,12 @@
 		<level value="DEBUG" />
 	</logger>
 	 -->
+	<logger name="org.jai.oozie">
+		<level value="DEBUG" />
+	</logger>
+	
+	<logger name="org.apache.oozie">
+		<level value="WARN" />
+	</logger> 
+	 
 </configuration>
