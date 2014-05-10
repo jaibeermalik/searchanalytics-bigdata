@@ -1,6 +1,6 @@
 <workflow-app xmlns="uri:oozie:workflow:0.3" name="hive-load-customerqueries-wf">
 	<start to="hive-load-customerqueries" />
-	<action name="hive-load-customerqueries" retry-max="2"
+	<action name="hive-load-customerqueries" retry-max="1"
 		retry-interval="1">
 		<hive xmlns="uri:oozie:hive-action:0.3">
 			<job-tracker>${jobTracker}</job-tracker>

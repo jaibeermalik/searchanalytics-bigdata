@@ -1,6 +1,6 @@
 <workflow-app xmlns="uri:oozie:workflow:0.3" name="hive-index-topqueries-es-wf">
 	<start to="hive-index-topqueries-es" />
-	<action name="hive-index-topqueries-es" retry-max="2"
+	<action name="hive-index-topqueries-es" retry-max="1"
 		retry-interval="1">
 		<hive xmlns="uri:oozie:hive-action:0.3">
 			<job-tracker>${jobTracker}</job-tracker>
