@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
@@ -32,20 +33,22 @@ public class HiveSearchClicksServiceTest extends
 
 	@Before
 	public void prepareHive() {
+		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
+		Path path = new Path("/searchevents");
+		try {
+			fs.delete(path, true);
+			fs.mkdirs(path);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		}
 		hiveSearchClicksService.setup();
 	}
 
 	private void prepareHiveData() {
-		try {
-			hadoopClusterService.getFileSystem().delete(
-					new Path("/searchevents"), true);
-			generateSearchAnalyticsDataService
-					.generateAndPushSearchEvents(searchEventsCount);
-			addPartitions();
-		} catch (IllegalArgumentException | IOException e) {
-			e.printStackTrace();
-			fail();
-		}
+		generateSearchAnalyticsDataService
+		.generateAndPushSearchEvents(searchEventsCount);
+		addPartitions();
 	}
 
 	@Test

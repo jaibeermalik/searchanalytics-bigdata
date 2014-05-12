@@ -25,16 +25,15 @@
 		as spring beans for setup like the elastic search client/node startup. -->
 
 	<!-- -->
-	<hdp:configuration id="hadoopConfiguration">
+	<hdp:configuration id="hadoopConfiguration" resources="core-site.xml">
 		fs.default.name=hdfs://localhost.localdomain:54321
 		signature.secret=blahblahASDA12313Aasdaadssa
 		hadoop.log.dir=./target/logs
+		mapred.job.tracker=localhost.localdomain:54310
 	</hdp:configuration>
 
-	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar 
-		hive.exec.reducers.max=20
-		mapred.reduce.tasks=20
-	-->
+	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar hive.exec.reducers.max=20 
+		mapred.reduce.tasks=20 -->
 	<hdp:hive-server auto-startup="true" port="10234" 
 		min-threads="3" id="hiveServer" configuration-ref="hadoopConfiguration">
 		hive.exec.scratchdir=/tmp/hivetmp
@@ -50,7 +49,7 @@
 		hive.querylog.enable.plan.progress=true
 	</hdp:hive-server>
 
-	<hdp:hive-client-factory id="hiveClientFactory"
+	<hdp:hive-client-factory id="hiveClientFactory" 
 		host="localhost" port="10234">
 		<!-- <hdp:script> DROP DATABASE IF EXISTS search; CREATE DATABASE search; 
 			</hdp:script> <hdp:script location="classpath:org/jai/hive/script.q"> <hdp:arguments>ignore-case=true</hdp:arguments> 
@@ -73,7 +72,8 @@
 			/> -->
 	</hdp:hive-runner>
 
-	<hdp:hive-tasklet id="hiveTasklet" hive-client-factory-ref="hiveClientFactory"></hdp:hive-tasklet>
+	<hdp:hive-tasklet id="hiveTasklet"
+		hive-client-factory-ref="hiveClientFactory"></hdp:hive-tasklet>
 
 	<!-- <hdp:job id="mr-job-example1" input-path="/searchevents" output-path="/ouput/" 
 		mapper="org.jai.hadoop.example.MaxTemperatureMapper" reducer="org.jai.hadoop.example.MaxTemperatureReducer" 
@@ -83,5 +83,20 @@
 	<!-- <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" 
 		/> -->
 
+	<!-- 
+	<hdp:pig />
+ 	-->
+ 	
+ 	<!--  properties-location="pig/pig.properties" -->
+	<hdp:pig-factory id="pigFactory" job-name="pigScript"  exec-type="MAPREDUCE"
+		configuration-ref="hadoopConfiguration"
+		>
+	</hdp:pig-factory>
+
+	<hdp:pig-runner id="pigRunner" run-at-startup="false" pig-factory-ref="pigFactory">
+
+	</hdp:pig-runner>
+
+	<hdp:pig-template id="pigTemplate" pig-factory-ref="pigFactory" />
 
 </beans>

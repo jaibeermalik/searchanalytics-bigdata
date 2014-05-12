@@ -95,27 +95,47 @@ public abstract class AbstractSearchJUnit4SpringContextTests extends
 	}
 
 	protected void printHdfsData() throws IOException {
-		Path dirPath = new Path(hadoopClusterService.getHDFSUri()
-				+ "/searchevents");
+		printHdfsFileDirData(hadoopClusterService.getHDFSUri()
+				+ "/searchevents", "searchevents");
+	}
+	
+	protected void printHdfsFileDirData(String path, String filePrefix) throws IOException {
+		printAndCountHdfsFileDirData(path, filePrefix, true, false);
+	}
+	
+	protected int printAndCountHdfsFileDirData(String path, String filePrefix, boolean print, boolean count) throws IOException {
+		int recordsCount =0;
 		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
-		RemoteIterator<LocatedFileStatus> files = fs.listFiles(dirPath, true);
+		RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(path), true);
 		while (files.hasNext()) {
 			LocatedFileStatus locatedFileStatus = files.next();
 			System.out.println("Check:" + locatedFileStatus.getPath());
 			if (locatedFileStatus.isFile()) {
-				Path path = locatedFileStatus.getPath();
-				if (path.getName().startsWith("searchevents")) {
-					FSDataInputStream input = fs.open(path);
+				Path filePath = locatedFileStatus.getPath();
+				if (filePath.getName().startsWith(filePrefix)) {
+					FSDataInputStream input = fs.open(filePath);
 					BufferedReader reader = new BufferedReader(
 							new InputStreamReader(input));
 					String body = null;
 					while ((body = reader.readLine()) != null) {
-						System.out.println("body is:" + body);
+						if(print)
+						{
+							System.out.println("body is:" + body);
+						}
+						if(count)
+						{
+							recordsCount++;
+						}
 					}
 					reader.close();
 					input.close();
 				}
 			}
 		}
+		return recordsCount;
+	}
+	
+	protected int countHdfsFileDataRecords(String path, String filePrefix) throws IOException {
+		return printAndCountHdfsFileDirData(path, filePrefix, false, true);
 	}
 }

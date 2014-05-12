@@ -16,7 +16,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.hadoop.hive.HiveClientCallback;
 import org.springframework.data.hadoop.hive.HiveRunner;
 import org.springframework.data.hadoop.hive.HiveScript;
-import org.springframework.data.hadoop.hive.HiveTasklet;
 import org.springframework.data.hadoop.hive.HiveTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -36,8 +35,6 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 
 	@Autowired
 	private HiveRunner hiveRunner;
-	@Autowired
-	private HiveTasklet hiveTasklet;
 
 	@Override
 	public List<String> getDbs() {
@@ -171,6 +168,7 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 			scripts.add(script);
 			hiveRunner.setScripts(scripts);
 			hiveRunner.call();
+//			hiveRunner.
 		} catch (Exception e) {
 			String errMsg = "Failed to loadSearchCustomerQueryTable in hive!";
 			LOG.error(errMsg, e);

@@ -8,19 +8,20 @@
 	<name>Search Analyticsusing Bigdata</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jackson.version>1.9.3</jackson.version>
-		<fastxml.jackson.version>2.3.0-rc1</fastxml.jackson.version>
-		<!-- <flume.version>1.4.0</flume.version>  -->
+		<!-- <jackson.version>1.9.3</jackson.version>  -->
+		<fastxml.jackson.version>2.3.3</fastxml.jackson.version>
+		<!-- <flume.version>1.4.0</flume.version> -->
 		<flume.version>1.4.0-cdh5.0.0</flume.version>
-		<hive.version>0.12.0-cdh5.0.0</hive.version>  
-		<!-- <hive.version>0.12.0</hive.version>  -->
+		<hive.version>0.12.0-cdh5.0.0</hive.version>
+		<!-- <hive.version>0.12.0</hive.version> -->
 		<!-- <hadoop.version>2.4.0</hadoop.version> -->
 		<hadoop.version>2.3.0-cdh5.0.0</hadoop.version>
 		<hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version>
-		<!-- <hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version>  -->
+		<!-- <hadoop.mr1.version>2.3.0-mr1-cdh5.0.0</hadoop.mr1.version> -->
 		<oozie.hadoop.version>2.3.0-mr1-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version>
-		<!--  <oozie.hadoop.version>2.3.0-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version> -->
+		<!-- <oozie.hadoop.version>2.3.0-cdh5.0.0.oozie-4.0.0-cdh5.0.0</oozie.hadoop.version> -->
 		<oozie.version>4.0.0-cdh5.0.0</oozie.version>
+		<pig.version>0.12.0-cdh5.0.0</pig.version>
 		<log4j.version>1.2.16</log4j.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<scala.version>2.10.3</scala.version>
@@ -38,10 +39,13 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-		<!-- 
+		<!-- <repository> <id>mavenrepo-releases</id> <url>http://repo.maven.apache.org/maven2</url> 
+			<releases> <enabled>true</enabled> </releases> <snapshots> <enabled>false</enabled> 
+			</snapshots> </repository> -->
 		<repository>
-			<id>mavenrepo-releases</id>
-			<url>http://repo.maven.apache.org/maven2</url>
+			<id>spring-milestone</id>
+			<name>Spring Milestone Repository</name>
+			<url>http://repo.spring.io/libs-milestone</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -49,7 +53,6 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-		 -->
 	</repositories>
 
 	<dependencies>
@@ -76,6 +79,7 @@
 		<!-- <dependency> <groupId>org.apache.logging.log4j</groupId> <artifactId>log4j-slf4j-impl</artifactId> 
 			<version>${log4j.version}</version> </dependency> <dependency> <groupId>org.apache.logging.log4j</groupId> 
 			<artifactId>log4j-jcl</artifactId> <version>${log4j.version}</version> </dependency> -->
+		<!-- 
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-core-asl</artifactId>
@@ -96,6 +100,7 @@
 			<artifactId>jackson-xc</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		 -->
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
@@ -132,13 +137,8 @@
 			<artifactId>spring-batch-core</artifactId>
 			<version>2.2.6.RELEASE</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch-hadoop</artifactId>
-			<version>1.3.0.M3</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>org.elasticsearch</groupId> <artifactId>elasticsearch-hadoop</artifactId> 
+			<version>1.3.0.M3</version> </dependency> -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch-hadoop-hive</artifactId>
@@ -180,6 +180,12 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${fastxml.jackson.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jsonSchema</artifactId>
+			<version>${fastxml.jackson.version}</version>
+		</dependency>
+		
 		<!-- <dependency> <groupId>org.apache.flume</groupId> <artifactId>flume-ng-sdk</artifactId> 
 			<version>${flume.version}</version> <exclusions> <exclusion> <artifactId>guava</artifactId> 
 			<groupId>com.google.guava</groupId> </exclusion> <exclusion> <artifactId>org.slf4j</artifactId> 
@@ -308,9 +314,29 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
+			<artifactId>hive-exec</artifactId>
+			<version>${hive.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-testutils</artifactId>
 			<version>${hive.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pig</groupId>
+			<artifactId>pig</artifactId>
+			<version>${pig.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pig</groupId>
+			<artifactId>pigsmoke</artifactId>
+			<version>${pig.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pig</groupId>
+			<artifactId>pigunit</artifactId>
+			<version>${pig.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -347,38 +373,20 @@
 			<artifactId>hadoop-minicluster</artifactId>
 			<version>${hadoop.mr1.version}</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-yarn</artifactId>
-			<version>${hadoop.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-yarn-api</artifactId>
-			<version>${hadoop.version}</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-yarn</artifactId> 
+			<version>${hadoop.version}</version> </dependency> <dependency> <groupId>org.apache.hadoop</groupId> 
+			<artifactId>hadoop-yarn-api</artifactId> <version>${hadoop.version}</version> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-hadoop</artifactId>
-			<version>1.0.2.RELEASE-hadoop22</version>
-			<!-- 
-			<exclusions>
-				<exclusion>
-						<groupId>org.apache.hadoop</groupId>
-						<artifactId>hadoop-yarn-common</artifactId>
-				</exclusion>
-			</exclusions>
-			 -->
+			<!--  <version>1.0.2.RELEASE-hadoop22</version> -->
+			<version>2.0.0.RC3-cdh5</version>
+			<!-- <exclusions> <exclusion> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-yarn-common</artifactId> 
+				</exclusion> </exclusions> -->
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-yarn-boot</artifactId>
-			<version>2.0.0.RC2-cdh5</version>
-		</dependency>
-		 -->
+		<!-- <dependency> <groupId>org.springframework.data</groupId> <artifactId>spring-yarn-boot</artifactId> 
+			<version>2.0.0.RC2-cdh5</version> </dependency> -->
 		<!-- -->
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
@@ -395,7 +403,7 @@
 			<artifactId>jdk.tools</artifactId>
 			<version>1.7</version>
 			<scope>system</scope>
-<systemPath>/usr/java/jdk1.7.0_51/lib/tools.jar</systemPath>
+			<systemPath>/usr/java/jdk1.7.0_51/lib/tools.jar</systemPath>
 		</dependency>
 		<!-- Testing dependencies -->
 		<dependency>

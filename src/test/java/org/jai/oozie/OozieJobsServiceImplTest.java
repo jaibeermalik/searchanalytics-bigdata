@@ -20,8 +20,6 @@ public class OozieJobsServiceImplTest extends
 	@Autowired
 	private OozieJobsService oozieJobsService;
 	@Autowired
-	private HadoopClusterService hadoopClusterService;
-	@Autowired
 	private HiveSearchClicksService hiveSearchClicksService;
 	
 	@Before

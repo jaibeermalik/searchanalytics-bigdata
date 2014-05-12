@@ -58,6 +58,9 @@ public class CompleteSetupIntegrationTest extends
 
 			// Generate Events
 
+			hadoopClusterService.getFileSystem().delete(
+					new Path("/searchevents"), true);
+			
 			List<Event> searchEvents = generateSearchAnalyticsDataService
 					.getSearchEvents(searchEventsCount);
 

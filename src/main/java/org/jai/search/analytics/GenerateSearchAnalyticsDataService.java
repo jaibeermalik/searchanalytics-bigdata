@@ -8,4 +8,8 @@ public interface GenerateSearchAnalyticsDataService {
 	void generateAndPushSearchEvents(int numberOfEvents);
 
 	List<Event> getSearchEvents(int numberOfEvents);
+	
+	String generateSearchQueryInstructionJsonSchema();
+
+	String generateSearchQueryInstructionPIGJsonSchema();
 }

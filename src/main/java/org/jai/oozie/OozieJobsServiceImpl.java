@@ -95,7 +95,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 				.getFile();
 		LOG.debug("wfdir: {}", wfDir.getAbsolutePath());
 		FileUtil.copy(wfDir, fs, workFlowRootPath, false, new Configuration());
-		FileUtil.copy(new ClassPathResource("conf/hive-site.xml").getFile(),
+		FileUtil.copy(new ClassPathResource("hive-site.xml").getFile(),
 				fs, new Path(workFlowRoot), false, new Configuration());
 		return workFlowRoot;
 	}
@@ -114,7 +114,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 				.getFile();
 		LOG.debug("wfdir: {}", wfDir.getAbsolutePath());
 		FileUtil.copy(wfDir, fs, workFlowRootPath, false, new Configuration());
-		FileUtil.copy(new ClassPathResource("conf/hive-site.xml").getFile(),
+		FileUtil.copy(new ClassPathResource("hive-site.xml").getFile(),
 				fs, new Path(workFlowRoot), false, new Configuration());
 		return workFlowRoot;
 	}
@@ -388,17 +388,17 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			File oozieConf = new File(oozieHome, "conf");
 			oozieConf.mkdir();
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/oozie-site.xml").getFile(), oozieConf);
+					"oozie-site.xml").getFile(), oozieConf);
 			File oozieHadoopConf = new File(oozieConf, "hadoop-conf");
 			oozieHadoopConf.mkdir();
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/core-site.xml").getFile(), oozieHadoopConf);
+					"core-site.xml").getFile(), oozieHadoopConf);
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/mapred-site.xml").getFile(), oozieHadoopConf);
+					"mapred-site.xml").getFile(), oozieHadoopConf);
 			File oozieActionConf = new File(oozieConf, "action-conf");
 			oozieActionConf.mkdir();
 			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"conf/hive-site.xml").getFile(), oozieActionConf);
+					"hive-site.xml").getFile(), oozieActionConf);
 			oozieData.mkdir();
 
 			String userName = System.getProperty("user.name");

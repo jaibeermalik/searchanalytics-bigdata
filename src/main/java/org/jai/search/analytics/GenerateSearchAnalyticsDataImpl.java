@@ -36,6 +36,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy.PropertyNamingStrategyBase;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
+import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
 
 @Service
 public class GenerateSearchAnalyticsDataImpl implements
@@ -118,14 +120,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 	private Event getJsonEvent(
 			final SearchQueryInstruction searchQueryInstruction)
 			throws JsonProcessingException {
-		final ObjectMapper mapper = new ObjectMapper();
-		// try without pretty print..all data in single line
-		final String searchQueryInstructionAsString = mapper
-				.setPropertyNamingStrategy(
-						new SearchFieldsLowerCaseNameStrategy())
-				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
-				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-				.writeValueAsString(searchQueryInstruction);
+		final String searchQueryInstructionAsString = getObjectMapper().writeValueAsString(searchQueryInstruction);
 		// String writeValueAsString =
 		// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(searchQueryInstruction);
 		searchEventsLogger.info(searchQueryInstructionAsString);
@@ -145,6 +140,17 @@ public class GenerateSearchAnalyticsDataImpl implements
 		}
 		event.setHeaders(headers);
 		return event;
+	}
+
+	private ObjectMapper getObjectMapper()
+			throws JsonProcessingException {
+		final ObjectMapper mapper = new ObjectMapper();
+		// try without pretty print..all data in single line
+		return mapper
+				.setPropertyNamingStrategy(
+						new SearchFieldsLowerCaseNameStrategy())
+				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 	}
 
 	private SearchCriteria getSearchCriteria() {
@@ -264,6 +270,32 @@ public class GenerateSearchAnalyticsDataImpl implements
 		return filters;
 	}
 
+	@Override
+	public String generateSearchQueryInstructionJsonSchema() {
+		String jsonSchemaAsString = null;
+		try {
+			ObjectMapper mapper = getObjectMapper();
+			SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
+			mapper.acceptJsonFormatVisitor(mapper.constructType(SearchQueryInstruction.class), visitor);
+			JsonSchema schema = visitor.finalSchema();
+			jsonSchemaAsString = mapper.writeValueAsString(schema);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Error occured generating json schema!",e);
+		}
+		return jsonSchemaAsString; 
+	}
+	
+	@Override
+	public String generateSearchQueryInstructionPIGJsonSchema() {
+		//If default JsonLoader is used, sequencing of schema fields is important.
+		//Same order as the data is written in event.
+		return "eventid:chararray, hostedmachinename:chararray, pageurl:chararray,"
+				+ "customerid:long, sessionid:chararray, querystring:chararray, sortorder:chararray,"
+				+ "pagenumber:int, totalhits:int, hitsshown:int,"
+				+ "createdtimestampinmillis:long, clickeddocid:chararray, favourite:boolean,"
+			    + "eventidsuffix:chararray, filters:{(value:chararray, code:chararray)}";
+	}
+	
 	@SuppressWarnings("serial")
 	private static class SearchFieldsLowerCaseNameStrategy extends
 			PropertyNamingStrategyBase {
