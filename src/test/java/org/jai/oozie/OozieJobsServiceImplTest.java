@@ -11,6 +11,7 @@ import org.jai.hadoop.HadoopClusterService;
 import org.jai.hive.HiveSearchClicksService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -51,6 +52,7 @@ public class OozieJobsServiceImplTest extends
 	}
 	
 	@Test
+	@Ignore
 	public void startHiveAddPartitionCoordJob() throws OozieClientException, InterruptedException,
 			IllegalArgumentException, IOException {
 		prepareHiveData();
@@ -62,6 +64,7 @@ public class OozieJobsServiceImplTest extends
 	}
 	
 	@Test
+	@Ignore
 	public void startIndexTopCustomerQueryBundleCoordJob() throws OozieClientException, InterruptedException,
 			IllegalArgumentException, IOException {
 		prepareHiveData();

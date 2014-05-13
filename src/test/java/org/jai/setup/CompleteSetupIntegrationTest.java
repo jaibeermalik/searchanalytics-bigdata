@@ -53,7 +53,7 @@ public class CompleteSetupIntegrationTest extends
 	private int searchEventsCount = 11;
 
 	@Test
-	public void test() {
+	public void testFullDataFlow() {
 		try {
 
 			// Generate Events

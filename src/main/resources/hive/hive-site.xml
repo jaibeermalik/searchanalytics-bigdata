@@ -8,6 +8,16 @@
 		<name>hive.start.cleanup.scratchdir</name>
 		<value>true</value>
 	</property>
+	<!-- 
+	<property>
+		<name>hive.exec.reducers.max</name>
+		<value>999</value>
+	</property>
+	<property>
+		<name>mapred.reduce.tasks</name>
+		<value>1</value>
+	</property>
+ 	-->
 	<property>
 		<name>hive.exec.scratchdir</name>
 		<value>/tmp/hivetmp</value>
@@ -37,22 +47,26 @@
 		<name>datanucleus.autoCreateSchema</name>
 		<value>true</value>
 	</property>
-
 	<property>
-		<name>datanucleus.fixedDatastore</name>
+		<name>datanucleus.autoCreateTables</name>
 		<value>true</value>
 	</property>
 
+	<!-- <property> <name>datanucleus.fixedDatastore</name> <value>true</value> 
+		</property> <property> <name>datanucleus.autoStartMechanism</name> <value>SchemaTable</value> 
+		</property> -->
 	<property>
-		<name>datanucleus.autoStartMechanism</name>
-		<value>SchemaTable</value>
+		<name>hive.task.progress</name>
+		<value>true</value>
 	</property>
 
+	
 	<property>
 		<name>hive.metastore.uris</name>
 		<value>thrift://localhost:10234</value>
 		<description>IP address (or fully-qualified domain name) and port of
-			the metastore host</description>
+			the metastore host
+		</description>
 	</property>
 	<property>
 		<name>hive.support.concurrency</name>
@@ -60,16 +74,17 @@
 		<value>true</value>
 	</property>
 
+	<!-- 
 	<property>
 		<name>hive.zookeeper.quorum</name>
 		<description>Zookeeper quorum used by Hive's Table Lock Manager
 		</description>
 		<value>localhost</value>
 	</property>
-
 	<property>
 		<name>hive.aux.jars.path</name>
 		<value></value>
 	</property>
+ 	-->
 
 </configuration>

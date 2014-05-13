@@ -6,9 +6,10 @@
 		<value>localhost.localdomain:54310</value>
 	</property>
 
+	<!-- 
 	<property>
 		<name>mapreduce.framework.name</name>
 		<value>local</value>
 	</property>
-
+	 -->
 </configuration>

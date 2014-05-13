@@ -32,24 +32,31 @@
 		mapred.job.tracker=localhost.localdomain:54310
 	</hdp:configuration>
 
-	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar hive.exec.reducers.max=20 
-		mapred.reduce.tasks=20 -->
+	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar
+		Keeping hive-site.xml not in class path. 
+		hive.exec.reducers.max=20 
+		mapred.reduce.tasks=20
+		hive.exec.reducers.max=20 
+		datanucleus.autoStartMechanism=SchemaTable
+		datanucleus.fixedDatastore=true
+		-->
 	<hdp:hive-server auto-startup="true" port="10234" 
 		min-threads="3" id="hiveServer" configuration-ref="hadoopConfiguration">
 		hive.exec.scratchdir=/tmp/hivetmp
 		hive.exec.local.scratchdir=/tmp/hiveusrtmp
 		hive.metastore.warehouse.dir=/tmp/hivewarehouse
+		datanucleus.autoCreateSchema=true
+		datanucleus.autoCreateTables=true
 		javax.jdo.option.ConnectionURL=jdbc:derby:;databaseName=./target/hive/metastore_db;create=true
 		javax.jdo.option.ConnectionDriverName=org.apache.derby.jdbc.EmbeddedDriver
 		hive.start.cleanup.scratchdir=true
 		hive.log.dir=./target/hive/logs
 		hive.log.file=hive.log
-		hive.root.logger=INFO
 		hive.querylog.location=./target/hive/logs
 		hive.querylog.enable.plan.progress=true
 	</hdp:hive-server>
 
-	<hdp:hive-client-factory id="hiveClientFactory" 
+	<hdp:hive-client-factory id="hiveClientFactory"  
 		host="localhost" port="10234">
 		<!-- <hdp:script> DROP DATABASE IF EXISTS search; CREATE DATABASE search; 
 			</hdp:script> <hdp:script location="classpath:org/jai/hive/script.q"> <hdp:arguments>ignore-case=true</hdp:arguments> 
@@ -84,10 +91,14 @@
 		/> -->
 
 	<!-- 
-	<hdp:pig />
  	-->
  	
- 	<!--  properties-location="pig/pig.properties" -->
+ 	<!--  properties-location="pig/pig.properties" 
+ 	Needs core-site.xml in the classpath.
+ 	-->
+ 	
+ 	<!-- 
+ 	-->
 	<hdp:pig-factory id="pigFactory" job-name="pigScript"  exec-type="MAPREDUCE"
 		configuration-ref="hadoopConfiguration"
 		>
@@ -98,5 +109,5 @@
 	</hdp:pig-runner>
 
 	<hdp:pig-template id="pigTemplate" pig-factory-ref="pigFactory" />
-
+ 	
 </beans>
