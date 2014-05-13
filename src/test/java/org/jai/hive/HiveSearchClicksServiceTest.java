@@ -47,7 +47,7 @@ public class HiveSearchClicksServiceTest extends
 
 	private void prepareHiveData() {
 		generateSearchAnalyticsDataService
-		.generateAndPushSearchEvents(searchEventsCount);
+				.generateAndPushSearchEvents(searchEventsCount);
 		addPartitions();
 	}
 
@@ -115,8 +115,8 @@ public class HiveSearchClicksServiceTest extends
 	@Test
 	public void testLoadSearchCustomerQueryTable() {
 		prepareHiveData();
-		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(dbName,
-				tbName);
+		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(
+				dbName, tbName);
 		System.out.println("Search search_clicks count is:"
 				+ totalRowCountClicks);
 		assertTrue(totalRowCountClicks > 0);
@@ -131,14 +131,14 @@ public class HiveSearchClicksServiceTest extends
 	@Test
 	public void testLoadTopSearchCustomerQueryToElasticSearchIndex() {
 		prepareHiveData();
-		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(dbName,
-				tbName);
+		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(
+				dbName, tbName);
 		System.out.println("Search search_clicks count is:"
 				+ totalRowCountClicks);
 		assertTrue(totalRowCountClicks > 0);
 		hiveSearchClicksService.loadSearchCustomerQueryTable();
-		int totalRowCountQuery = hiveSearchClicksService.getTotalRowCount(dbName,
-				"search_customerquery");
+		int totalRowCountQuery = hiveSearchClicksService.getTotalRowCount(
+				dbName, "search_customerquery");
 		System.out.println("Search search_customerquery count is:"
 				+ totalRowCountQuery);
 		assertTrue(totalRowCountQuery > 0);

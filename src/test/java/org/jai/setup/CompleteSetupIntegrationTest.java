@@ -1,7 +1,8 @@
 package org.jai.setup;
 
 import static org.junit.Assert.fail;
-
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.jai.elasticsearch.CustomerTopQueryService;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.HadoopClusterService;
@@ -50,6 +52,8 @@ public class CompleteSetupIntegrationTest extends
 	private HiveSearchClicksService hiveSearchClicksService;
 	@Autowired
 	private OozieJobsService oozieJobsService;
+	@Autowired
+	private CustomerTopQueryService customerTopQueryService;
 	private int searchEventsCount = 11;
 
 	@Test
@@ -60,7 +64,7 @@ public class CompleteSetupIntegrationTest extends
 
 			hadoopClusterService.getFileSystem().delete(
 					new Path("/searchevents"), true);
-			
+
 			List<Event> searchEvents = generateSearchAnalyticsDataService
 					.getSearchEvents(searchEventsCount);
 
@@ -152,6 +156,10 @@ public class CompleteSetupIntegrationTest extends
 				.setSize(searchEventsCount).get().getHits()) {
 			System.out.println(searchHit.getSource());
 		}
+
+		long countTotalRecords = customerTopQueryService.countTotalRecords();
+		assertTrue(countTotalRecords > 0);
+		assertEquals(totalCount, countTotalRecords);
 	}
 
 	private void FlumeESSinkAndTestData(List<Event> searchEvents)

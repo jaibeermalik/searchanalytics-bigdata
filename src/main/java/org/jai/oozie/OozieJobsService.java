@@ -7,7 +7,7 @@ public interface OozieJobsService {
 	void shutdown();
 
 	void startHiveAddPartitionCoordJob();
-	
+
 	void runHiveAddPartitionWorkflowJob();
 
 	void startIndexTopCustomerQueryBundleCoordJob();

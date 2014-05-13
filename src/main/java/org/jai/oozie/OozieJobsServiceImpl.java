@@ -53,7 +53,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			throw new RuntimeException(errMsg, e);
 		}
 	}
-	
+
 	@Override
 	public void runHiveAddPartitionWorkflowJob() {
 		try {
@@ -67,7 +67,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			throw new RuntimeException(errMsg, e);
 		}
 	}
-	
+
 	@Override
 	public void startIndexTopCustomerQueryBundleCoordJob() {
 		try {
@@ -80,11 +80,11 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			throw new RuntimeException(errMsg, e);
 		}
 	}
-	
+
 	private String setupTopCustomerQueryBundleJobApp() throws IOException {
 		String userName = System.getProperty("user.name");
-		String workFlowRoot = hadoopClusterService.getHDFSUri()
-				+ "/usr/" + userName +"/oozie/bundle-hive-to-es-topqueries";
+		String workFlowRoot = hadoopClusterService.getHDFSUri() + "/usr/"
+				+ userName + "/oozie/bundle-hive-to-es-topqueries";
 
 		// put oozie app in hadoop
 		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
@@ -102,8 +102,8 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 
 	private String setupHiveAddPartitionWorkflowApp() throws IOException {
 		String userName = System.getProperty("user.name");
-		String workFlowRoot = hadoopClusterService.getHDFSUri()
-				+ "/usr/" + userName + "/oozie/wf-hive-add-partition";
+		String workFlowRoot = hadoopClusterService.getHDFSUri() + "/usr/"
+				+ userName + "/oozie/wf-hive-add-partition";
 
 		// put oozie app in hadoop
 		DistributedFileSystem fs = hadoopClusterService.getFileSystem();
@@ -118,7 +118,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 				fs, new Path(workFlowRoot), false, new Configuration());
 		return workFlowRoot;
 	}
-	
+
 	private void submitTopQueriesBundleCoordJob(String workFlowRoot)
 			throws OozieClientException, InterruptedException {
 		// OozieClient client = LocalOozie.getCoordClient();
@@ -132,17 +132,18 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 				+ "/coord-app-load-customerqueries.xml");
 		conf.setProperty("coordAppPathIndexTopQueriesES", workFlowRoot
 				+ "/coord-app-index-topqueries-es.xml");
-		
+
 		conf.setProperty("nameNode", hadoopClusterService.getHDFSUri());
 		conf.setProperty("jobTracker", hadoopClusterService.getJobTRackerUri());
 		conf.setProperty("workflowRoot", workFlowRoot);
 		String userName = System.getProperty("user.name");
-		String oozieWorkFlowRoot = hadoopClusterService.getHDFSUri()
-				+ "/usr/" + userName +"/oozie";
+		String oozieWorkFlowRoot = hadoopClusterService.getHDFSUri() + "/usr/"
+				+ userName + "/oozie";
 		conf.setProperty("oozieWorkflowRoot", oozieWorkFlowRoot);
 		Date now = new Date();
 		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(now));
-		conf.setProperty("jobStartIndex", DateUtils.formatDateOozieTZ(new DateTime(now).plusMinutes(1).toDate()));
+		conf.setProperty("jobStartIndex", DateUtils
+				.formatDateOozieTZ(new DateTime(now).plusMinutes(1).toDate()));
 		conf.setProperty("jobEnd", DateUtils.formatDateOozieTZ(new DateTime()
 				.plusDays(2).toDate()));
 		conf.setProperty("initialDataset", DateUtils.formatDateOozieTZ(now));
@@ -158,48 +159,54 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		for (int i = 1; i <= retries; i++) {
 			// Sleep 60 sec./ 3 mins
 			Thread.sleep(60 * 1000);
-			
+
 			BundleJob bundleJobInfo = client.getBundleJobInfo(jobId);
 			LOG.debug("Workflow job running ...");
 			LOG.debug("bundleJobInfo Try: {}", i);
-			LOG.debug("bundleJobInfo StartTime: {}", bundleJobInfo.getStartTime());
+			LOG.debug("bundleJobInfo StartTime: {}",
+					bundleJobInfo.getStartTime());
 			LOG.debug("bundleJobInfo EndTime: {}", bundleJobInfo.getEndTime());
 			LOG.debug("bundleJobInfo ConsoleURL: {}",
 					bundleJobInfo.getConsoleUrl());
 			LOG.debug("bundleJobInfo Status: {}", bundleJobInfo.getStatus());
 
-			for (CoordinatorJob coordinatorJob : bundleJobInfo.getCoordinators()) {
-				LOG.debug("bundleJobInfo StartTime: {}", coordinatorJob.getStartTime());
-				LOG.debug("bundleJobInfo EndTime: {}", coordinatorJob.getEndTime());
+			for (CoordinatorJob coordinatorJob : bundleJobInfo
+					.getCoordinators()) {
+				LOG.debug("bundleJobInfo StartTime: {}",
+						coordinatorJob.getStartTime());
+				LOG.debug("bundleJobInfo EndTime: {}",
+						coordinatorJob.getEndTime());
 				LOG.debug("coordJobInfo NextMaterizedTime: {}",
 						coordinatorJob.getNextMaterializedTime());
-				LOG.debug("bundleJobInfo Frequency: {}", coordinatorJob.getFrequency());
-//				LOG.debug("bundleJobInfo ActionConsoleURL: {}", coordinatorJob
-//						.getActions().get(0).getConsoleUrl());
-//				LOG.debug("coordJobInfo ActionErrorMessage: {}", coordinatorJob
-//						.getActions().get(0).getErrorMessage());
-			};
-			if(bundleJobInfo.getStatus() == Job.Status.RUNNING)
-			{
-				//Wait three times to see the running state is stable..then it is fine.
-				//Job will keep running even if hive action fails.
-				if(i == 3)
-				{
-					LOG.info("Coord Job in running state! " + bundleJobInfo.getStatus());
+				LOG.debug("bundleJobInfo Frequency: {}",
+						coordinatorJob.getFrequency());
+				// LOG.debug("bundleJobInfo ActionConsoleURL: {}",
+				// coordinatorJob
+				// .getActions().get(0).getConsoleUrl());
+				// LOG.debug("coordJobInfo ActionErrorMessage: {}",
+				// coordinatorJob
+				// .getActions().get(0).getErrorMessage());
+			}
+			;
+			if (bundleJobInfo.getStatus() == Job.Status.RUNNING) {
+				// Wait three times to see the running state is stable..then it
+				// is fine.
+				// Job will keep running even if hive action fails.
+				if (i == 3) {
+					LOG.info("Coord Job in running state! "
+							+ bundleJobInfo.getStatus());
 					break;
-				}
-				else
-				{
+				} else {
 					continue;
 				}
-			}
-			else if(bundleJobInfo.getStatus() == Job.Status.PREMATER || bundleJobInfo.getStatus() == Job.Status.PREP)
-			{
-				//still preparing.
+			} else if (bundleJobInfo.getStatus() == Job.Status.PREMATER
+					|| bundleJobInfo.getStatus() == Job.Status.PREP) {
+				// still preparing.
 				continue;
-			}else
-			{
-				throw new RuntimeException("Error occured while running customer top queries bundle job! " + bundleJobInfo.getStatus());
+			} else {
+				throw new RuntimeException(
+						"Error occured while running customer top queries bundle job! "
+								+ bundleJobInfo.getStatus());
 			}
 		}
 	}
@@ -233,7 +240,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		for (int i = 1; i <= retries; i++) {
 			// Sleep 60 sec./ 3 mins
 			Thread.sleep(60 * 1000);
-			
+
 			CoordinatorJob coordJobInfo = client.getCoordJobInfo(jobId);
 			LOG.debug("Workflow job running ...");
 			LOG.debug("coordJobInfo Try: {}", i);
@@ -249,27 +256,23 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 					.getActions().get(0).getConsoleUrl());
 			LOG.debug("coordJobInfo ActionErrorMessage: {}", coordJobInfo
 					.getActions().get(0).getErrorMessage());
-			if(coordJobInfo.getStatus() == Job.Status.RUNNING)
-			{
-				//Wait three times to see the running state is stable..then it is fine.
-				//Job will keep running even if hive action fails.
-				if(i == 3)
-				{
+			if (coordJobInfo.getStatus() == Job.Status.RUNNING) {
+				// Wait three times to see the running state is stable..then it
+				// is fine.
+				// Job will keep running even if hive action fails.
+				if (i == 3) {
 					LOG.info("Coord Job in running state!");
 					break;
-				}
-				else
-				{
+				} else {
 					continue;
 				}
-			}
-			else if(coordJobInfo.getStatus() == Job.Status.PREMATER || coordJobInfo.getStatus() == Job.Status.PREP)
-			{
-				//still preparing.
+			} else if (coordJobInfo.getStatus() == Job.Status.PREMATER
+					|| coordJobInfo.getStatus() == Job.Status.PREP) {
+				// still preparing.
 				continue;
-			}else
-			{
-				throw new RuntimeException("Error occured while running coord job!");
+			} else {
+				throw new RuntimeException(
+						"Error occured while running coord job!");
 			}
 		}
 	}
@@ -391,8 +394,9 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 					"oozie/oozie-site.xml").getFile(), oozieConf);
 			File oozieHadoopConf = new File(oozieConf, "hadoop-conf");
 			oozieHadoopConf.mkdir();
-			FileUtils.copyFileToDirectory(new ClassPathResource(
-					"core-site.xml").getFile(), oozieHadoopConf);
+			FileUtils.copyFileToDirectory(
+					new ClassPathResource("core-site.xml").getFile(),
+					oozieHadoopConf);
 			FileUtils.copyFileToDirectory(new ClassPathResource(
 					"mapred-site.xml").getFile(), oozieHadoopConf);
 			File oozieActionConf = new File(oozieConf, "action-conf");
@@ -403,7 +407,8 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 
 			String userName = System.getProperty("user.name");
 			// FS set up
-			String sharedLibPathString = "/usr/" + userName +"/share/lib/lib_20140414170412/";
+			String sharedLibPathString = "/usr/" + userName
+					+ "/share/lib/lib_20140414170412/";
 			Path sharedLibPath = new Path(sharedLibPathString);
 			DistributedFileSystem fs = hadoopClusterService.getFileSystem();
 			fs.mkdirs(sharedLibPath);

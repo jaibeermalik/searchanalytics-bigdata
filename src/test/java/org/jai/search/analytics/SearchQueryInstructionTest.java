@@ -5,10 +5,9 @@ import org.junit.Test;
 public class SearchQueryInstructionTest {
 
 	private SearchQueryInstruction searchQueryInstruction;
-	
+
 	@Test
-	public void test()
-	{
+	public void test() {
 		searchQueryInstruction = new SearchQueryInstruction();
 		searchQueryInstruction.toString();
 	}

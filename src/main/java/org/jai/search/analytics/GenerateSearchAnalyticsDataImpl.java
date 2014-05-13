@@ -120,7 +120,8 @@ public class GenerateSearchAnalyticsDataImpl implements
 	private Event getJsonEvent(
 			final SearchQueryInstruction searchQueryInstruction)
 			throws JsonProcessingException {
-		final String searchQueryInstructionAsString = getObjectMapper().writeValueAsString(searchQueryInstruction);
+		final String searchQueryInstructionAsString = getObjectMapper()
+				.writeValueAsString(searchQueryInstruction);
 		// String writeValueAsString =
 		// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(searchQueryInstruction);
 		searchEventsLogger.info(searchQueryInstructionAsString);
@@ -142,8 +143,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		return event;
 	}
 
-	private ObjectMapper getObjectMapper()
-			throws JsonProcessingException {
+	private ObjectMapper getObjectMapper() throws JsonProcessingException {
 		final ObjectMapper mapper = new ObjectMapper();
 		// try without pretty print..all data in single line
 		return mapper
@@ -276,26 +276,29 @@ public class GenerateSearchAnalyticsDataImpl implements
 		try {
 			ObjectMapper mapper = getObjectMapper();
 			SchemaFactoryWrapper visitor = new SchemaFactoryWrapper();
-			mapper.acceptJsonFormatVisitor(mapper.constructType(SearchQueryInstruction.class), visitor);
+			mapper.acceptJsonFormatVisitor(
+					mapper.constructType(SearchQueryInstruction.class), visitor);
 			JsonSchema schema = visitor.finalSchema();
 			jsonSchemaAsString = mapper.writeValueAsString(schema);
 		} catch (JsonProcessingException e) {
-			throw new RuntimeException("Error occured generating json schema!",e);
+			throw new RuntimeException("Error occured generating json schema!",
+					e);
 		}
-		return jsonSchemaAsString; 
+		return jsonSchemaAsString;
 	}
-	
+
 	@Override
 	public String generateSearchQueryInstructionPIGJsonSchema() {
-		//If default JsonLoader is used, sequencing of schema fields is important.
-		//Same order as the data is written in event.
+		// If default JsonLoader is used, sequencing of schema fields is
+		// important.
+		// Same order as the data is written in event.
 		return "eventid:chararray, hostedmachinename:chararray, pageurl:chararray,"
 				+ "customerid:long, sessionid:chararray, querystring:chararray, sortorder:chararray,"
 				+ "pagenumber:int, totalhits:int, hitsshown:int,"
 				+ "createdtimestampinmillis:long, clickeddocid:chararray, favourite:boolean,"
-			    + "eventidsuffix:chararray, filters:{(value:chararray, code:chararray)}";
+				+ "eventidsuffix:chararray, filters:{(value:chararray, code:chararray)}";
 	}
-	
+
 	@SuppressWarnings("serial")
 	private static class SearchFieldsLowerCaseNameStrategy extends
 			PropertyNamingStrategyBase {

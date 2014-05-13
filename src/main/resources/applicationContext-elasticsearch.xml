@@ -3,18 +3,29 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:p="http://www.springframework.org/schema/p" xmlns:hdp="http://www.springframework.org/schema/hadoop"
-	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:c="http://www.springframework.org/schema/c" xmlns:yarn="http://www.springframework.org/schema/yarn"
+	xmlns:yarn-int="http://www.springframework.org/schema/yarn/integration"
+	xmlns:yarn-batch="http://www.springframework.org/schema/yarn/batch"
+	xmlns:elasticsearch="http://www.springframework.org/schema/data/elasticsearch"
 	xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
-		   http://www.springframework.org/schema/tx
-		   http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd
            http://www.springframework.org/schema/aop
            http://www.springframework.org/schema/aop/spring-aop.xsd
            http://www.springframework.org/schema/hadoop 
-           http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+           http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+           http://www.springframework.org/schema/yarn
+    	   http://www.springframework.org/schema/yarn/spring-yarn.xsd
+    	   http://www.springframework.org/schema/yarn/integration
+      	   http://www.springframework.org/schema/yarn/integration/spring-yarn-integration.xsd
+    	   http://www.springframework.org/schema/yarn/batch
+    	   http://www.springframework.org/schema/yarn/batch/spring-yarn-batch.xsd
+    	   http://www.springframework.org/schema/data/elasticsearch 
+    	   http://www.springframework.org/schema/data/elasticsearch/spring-elasticsearch-1.0.xsd">
 
 
 	<context:annotation-config />
@@ -24,23 +35,22 @@
 	<!-- To run job and hive etc. put hadoop cluster start and yarn startup 
 		as spring beans for setup like the elastic search client/node startup. -->
 
-	<!-- -->
-	<hdp:configuration id="hadoopConfiguration" resources="core-site.xml">
+	<!-- HADOOP configurations -->
+	<hdp:configuration id="hadoopConfiguration"
+		resources="core-site.xml">
 		fs.default.name=hdfs://localhost.localdomain:54321
 		signature.secret=blahblahASDA12313Aasdaadssa
 		hadoop.log.dir=./target/logs
 		mapred.job.tracker=localhost.localdomain:54310
 	</hdp:configuration>
 
-	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar
-		Keeping hive-site.xml not in class path. 
-		hive.exec.reducers.max=20 
-		mapred.reduce.tasks=20
-		hive.exec.reducers.max=20 
-		datanucleus.autoStartMechanism=SchemaTable
-		datanucleus.fixedDatastore=true
-		-->
-	<hdp:hive-server auto-startup="true" port="10234" 
+
+	<!-- HIVE Configurations -->
+
+	<!-- hive.aux.jars.path=file://./jaihivejsonserde-1.0.jar Keeping hive-site.xml 
+		not in class path. hive.exec.reducers.max=20 mapred.reduce.tasks=20 hive.exec.reducers.max=20 
+		datanucleus.autoStartMechanism=SchemaTable datanucleus.fixedDatastore=true -->
+	<hdp:hive-server auto-startup="true" port="10234"
 		min-threads="3" id="hiveServer" configuration-ref="hadoopConfiguration">
 		hive.exec.scratchdir=/tmp/hivetmp
 		hive.exec.local.scratchdir=/tmp/hiveusrtmp
@@ -56,7 +66,7 @@
 		hive.querylog.enable.plan.progress=true
 	</hdp:hive-server>
 
-	<hdp:hive-client-factory id="hiveClientFactory"  
+	<hdp:hive-client-factory id="hiveClientFactory"
 		host="localhost" port="10234">
 		<!-- <hdp:script> DROP DATABASE IF EXISTS search; CREATE DATABASE search; 
 			</hdp:script> <hdp:script location="classpath:org/jai/hive/script.q"> <hdp:arguments>ignore-case=true</hdp:arguments> 
@@ -90,24 +100,42 @@
 	<!-- <hdp:job-tasklet id="hadoop-tasklet" job-ref="mr-job-example1" wait-for-completion="true" 
 		/> -->
 
-	<!-- 
- 	-->
- 	
- 	<!--  properties-location="pig/pig.properties" 
- 	Needs core-site.xml in the classpath.
- 	-->
- 	
- 	<!-- 
- 	-->
-	<hdp:pig-factory id="pigFactory" job-name="pigScript"  exec-type="MAPREDUCE"
-		configuration-ref="hadoopConfiguration"
-		>
+	<!-- PIG configurations -->
+
+	<!-- properties-location="pig/pig.properties" Needs core-site.xml in the 
+		classpath. -->
+
+	<!-- -->
+	<hdp:pig-factory id="pigFactory" job-name="pigScript"
+		exec-type="MAPREDUCE" configuration-ref="hadoopConfiguration">
 	</hdp:pig-factory>
 
-	<hdp:pig-runner id="pigRunner" run-at-startup="false" pig-factory-ref="pigFactory">
+	<hdp:pig-runner id="pigRunner" run-at-startup="false"
+		pig-factory-ref="pigFactory">
 
 	</hdp:pig-runner>
 
 	<hdp:pig-template id="pigTemplate" pig-factory-ref="pigFactory" />
- 	
+
+
+	<!-- YARN configurations -->
+
+	<!-- Currently only using MR1 -->
+
+	<!-- HBASE settings <hdp:hbase-configuration id="hbaseConfiguration" configuration-ref="hadoopConfiguration" 
+		delete-connection="true" zk-quorum="localhost" zk-port="10235"> </hdp:hbase-configuration> 
+		<bean id="hbaseTemplate" class="org.springframework.data.hadoop.hbase.HbaseTemplate" 
+		p:configuration-ref="hbaseConfiguration"/> 
+		
+		-->
+		
+	<!-- ElasticSearch Spring data -->
+	<elasticsearch:transport-client id="esClient" cluster-nodes="localhost:9310" cluster-name="jai-testclusterName" />
+	
+	<bean name="elasticsearchTemplate" class="org.springframework.data.elasticsearch.core.ElasticsearchTemplate">
+        <constructor-arg name="client" ref="esClient"/>
+    </bean>
+
+	<elasticsearch:repositories base-package="org.jai.elasticsearch" elasticsearch-template-ref="elasticsearchTemplate" />
+    	
 </beans>

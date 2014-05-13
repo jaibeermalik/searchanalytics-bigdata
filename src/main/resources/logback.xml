@@ -96,12 +96,15 @@
 	<logger name="org.apache.oozie">
 		<level value="WARN" />
 	</logger> 
-	 -->
 	 <logger name="org.apache.hive">
 		<level value="DEBUG" />
 	</logger> 
-	<logger name=" org.apache.oozie.client.rest">
+	<logger name="org.apache.oozie.client.rest">
 		<level value="ERROR" />
+	</logger>
+	 -->
+	<logger name="org.jai.elasticsearch">
+		<level value="DEBUG" />
 	</logger>
 	 
 </configuration>

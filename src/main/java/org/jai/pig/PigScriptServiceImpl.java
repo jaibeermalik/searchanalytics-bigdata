@@ -32,7 +32,7 @@ public class PigScriptServiceImpl implements PigScriptService {
 
 	@Autowired
 	private PigRunner pigRunner;
-	
+
 	@Autowired
 	private GenerateSearchAnalyticsDataService generateSearchAnalyticsDataService;
 
@@ -56,7 +56,9 @@ public class PigScriptServiceImpl implements PigScriptService {
 					long count = 0;
 					for (ExecJob execJob : executeBatch) {
 						count = (Long) execJob.getResults().next().get(0);
-						LOG.debug("Pig Script Exec job result for total events: {}", count);
+						LOG.debug(
+								"Pig Script Exec job result for total events: {}",
+								count);
 					}
 					return count;
 				}
@@ -69,10 +71,12 @@ public class PigScriptServiceImpl implements PigScriptService {
 	}
 
 	@Override
-	public void getAllCustomerIds(String year, String month, String day, String hour) {
+	public void getAllCustomerIds(String year, String month, String day,
+			String hour) {
 		try {
 
-			String jsonSchema = generateSearchAnalyticsDataService.generateSearchQueryInstructionPIGJsonSchema();
+			String jsonSchema = generateSearchAnalyticsDataService
+					.generateSearchQueryInstructionPIGJsonSchema();
 			LOG.debug("Genrated json schema is: {}", jsonSchema);
 			Collection<PigScript> scripts = new ArrayList<PigScript>();
 			Map<String, String> args = new HashMap<>();
@@ -81,11 +85,11 @@ public class PigScriptServiceImpl implements PigScriptService {
 			args.put("MONTH", month);
 			args.put("DAY", day);
 			args.put("HOUR", hour);
-			
+
 			final PigScript script = new PigScript(new ClassPathResource(
 					"pig/count-unique-customerids.pig"), args);
 			scripts.add(script);
-			
+
 			pigRunner.setScripts(scripts);
 			pigRunner.call();
 

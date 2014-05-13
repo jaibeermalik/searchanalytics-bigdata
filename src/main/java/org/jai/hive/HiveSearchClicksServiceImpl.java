@@ -168,7 +168,7 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 			scripts.add(script);
 			hiveRunner.setScripts(scripts);
 			hiveRunner.call();
-//			hiveRunner.
+			// hiveRunner.
 		} catch (Exception e) {
 			String errMsg = "Failed to loadSearchCustomerQueryTable in hive!";
 			LOG.error(errMsg, e);

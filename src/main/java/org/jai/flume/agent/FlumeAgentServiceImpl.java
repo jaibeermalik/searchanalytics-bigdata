@@ -82,6 +82,8 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		avroSource.start();
 	}
 
+	// Note: Use in case just want to dump data to rolling file sink.
+	@SuppressWarnings("unused")
 	private void createAvroSourceWithLocalFileRollingSink() {
 		channel = new MemoryChannel();
 		String channelName = "AvroSourceMemoryChannel-" + UUID.randomUUID();
