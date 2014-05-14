@@ -10,7 +10,7 @@ public class CustomerTopQueryServiceTest extends
 		AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
-	private CustomerTopQueryService customerTopQueryService;
+	private ElasticSearchRepoService customerTopQueryService;
 	@Autowired
 	private TopQueryElasticsearchRepository topQueryElasticsearchRepository;
 
@@ -23,9 +23,9 @@ public class CustomerTopQueryServiceTest extends
 		entity.setCount(123);
 
 		topQueryElasticsearchRepository.save(entity);
-		assertEquals(1, customerTopQueryService.countTotalRecords());
+		assertEquals(1, customerTopQueryService.countCustomerTopQueryTotalRecords());
 		topQueryElasticsearchRepository.delete(entity);
-		assertEquals(0, customerTopQueryService.countTotalRecords());
+		assertEquals(0, customerTopQueryService.countCustomerTopQueryTotalRecords());
 	}
 
 }

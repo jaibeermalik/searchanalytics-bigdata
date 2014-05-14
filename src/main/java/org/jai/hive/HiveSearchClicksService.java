@@ -21,4 +21,8 @@ public interface HiveSearchClicksService {
 	void loadSearchCustomerQueryTable();
 
 	void loadTopSearchCustomerQueryToElasticSearchIndex();
+
+	void loadProductViewsTable();
+
+	void loadProductViewsToElasticSearchIndex();
 }

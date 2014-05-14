@@ -214,5 +214,40 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 		setupSearchDatabase();
 		setupSearchClicksTable();
 	}
+	
+	@Override
+	public void loadProductViewsTable() {
+		try {
+			// Load last one month top queries per customer.
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/load-search_productviews-table.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			hiveRunner.call();
+			// hiveRunner.
+		} catch (Exception e) {
+			String errMsg = "Failed to loadSearchCustomerQueryTable in hive!";
+			LOG.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
+		}
+	}
+	
+	@Override
+	public void loadProductViewsToElasticSearchIndex() {
+		try {
+			// Load last one month top queries per customer.
+			Collection<HiveScript> scripts = new ArrayList<>();
+			HiveScript script = new HiveScript(new ClassPathResource(
+					"hive/load-search_productviews_to_es.q"));
+			scripts.add(script);
+			hiveRunner.setScripts(scripts);
+			hiveRunner.call();
+		} catch (Exception e) {
+			String errMsg = "Failed to loadTopSearchCustomerQueryToElasticSearchIndex in hive!";
+			LOG.error(errMsg, e);
+			throw new RuntimeException(errMsg, e);
+		}
+	}
 
 }

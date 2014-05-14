@@ -11,6 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
+import org.jai.elasticsearch.ElasticSearchRepoService;
 import org.jai.search.test.AbstractSearchJUnit4SpringContextTests;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -20,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class HiveSearchClicksServiceTest extends
 		AbstractSearchJUnit4SpringContextTests {
 
+	private static final String SEARCH_CUSTOMERQUERY_TABLE = "search_customerquery";
+	private static final String SEARCH_PRODUCTVIEWS_TABLE = "search_productviews";
 	private int searchEventsCount = 200;
 	private String year;
 	private String month;
@@ -30,6 +33,8 @@ public class HiveSearchClicksServiceTest extends
 
 	@Autowired
 	private HiveSearchClicksService hiveSearchClicksService;
+	@Autowired
+	private ElasticSearchRepoService elasticSearchRepoService;
 
 	@Before
 	public void prepareHive() {
@@ -122,7 +127,7 @@ public class HiveSearchClicksServiceTest extends
 		assertTrue(totalRowCountClicks > 0);
 		hiveSearchClicksService.loadSearchCustomerQueryTable();
 		int totalRowCount = hiveSearchClicksService.getTotalRowCount(dbName,
-				"search_customerquery");
+				SEARCH_CUSTOMERQUERY_TABLE);
 		System.out.println("Search search_customerquery count is:"
 				+ totalRowCount);
 		assertTrue(totalRowCount > 0);
@@ -138,32 +143,79 @@ public class HiveSearchClicksServiceTest extends
 		assertTrue(totalRowCountClicks > 0);
 		hiveSearchClicksService.loadSearchCustomerQueryTable();
 		int totalRowCountQuery = hiveSearchClicksService.getTotalRowCount(
-				dbName, "search_customerquery");
+				dbName, SEARCH_CUSTOMERQUERY_TABLE);
 		System.out.println("Search search_customerquery count is:"
 				+ totalRowCountQuery);
 		assertTrue(totalRowCountQuery > 0);
 		hiveSearchClicksService
 				.loadTopSearchCustomerQueryToElasticSearchIndex();
 
-		int totalRowCount = hiveSearchClicksService.getTotalRowCount(dbName,
-				"search_customerquery");
-		System.out.println("Search search_customerquery_to_es count is:"
-				+ totalRowCount);
-		assertTrue(totalRowCount > 0);
-
 		String indexName = "topqueries";
+		String docType = "custquery";
 		Client client = searchClientService.getClient();
 		boolean exists = client.admin().indices().prepareExists(indexName)
 				.get().isExists();
 		long totalCount = 0;
 		if (exists) {
-			totalCount = client.prepareCount(indexName).get().getCount();
+			totalCount = client.prepareCount(indexName).setTypes(docType).get().getCount();
 			for (SearchHit searchHit : client.prepareSearch(indexName)
 					.setSize(100).get().getHits()) {
 				System.out.println(searchHit.getSource());
 			}
 		}
+		assertEquals(totalRowCountQuery, elasticSearchRepoService.countCustomerTopQueryTotalRecords());
 		System.out.println("Total topqueries count:" + totalCount);
+		elasticSearchRepoService.deleteAllCustomerTopQueryRecords();
+	}
+	
+	@Test
+	public void testLoadProductViewsTable() {
+		prepareHiveData();
+		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(
+				dbName, tbName);
+		System.out.println("Search search_clicks count is:"
+				+ totalRowCountClicks);
+		assertTrue(totalRowCountClicks > 0);
+		hiveSearchClicksService.loadProductViewsTable();
+		int totalRowCount = hiveSearchClicksService.getTotalRowCount(dbName,
+				SEARCH_PRODUCTVIEWS_TABLE);
+		System.out.println("Search search_customerquery count is:"
+				+ totalRowCount);
+		assertTrue(totalRowCount > 0);
+	}
+	
+	@Test
+	public void testLoadProductViewsToElasticSearchIndex() {
+		prepareHiveData();
+		int totalRowCountClicks = hiveSearchClicksService.getTotalRowCount(
+				dbName, tbName);
+		System.out.println("Search search_clicks count is:"
+				+ totalRowCountClicks);
+		assertTrue(totalRowCountClicks > 0);
+		hiveSearchClicksService.loadProductViewsTable();
+		int totalRowCountQuery = hiveSearchClicksService.getTotalRowCount(
+				dbName, SEARCH_PRODUCTVIEWS_TABLE);
+		System.out.println("Search search_productviews count is:"
+				+ totalRowCountQuery);
+		assertTrue(totalRowCountQuery > 0);
+		hiveSearchClicksService
+				.loadProductViewsToElasticSearchIndex();
+
+		String indexName = "productviews";
+		Client client = searchClientService.getClient();
+		boolean exists = client.admin().indices().prepareExists(indexName)
+				.get().isExists();
+		long totalCount = 0;
+		if (exists) {
+			totalCount = client.prepareCount(indexName).setTypes("productview").get().getCount();
+			for (SearchHit searchHit : client.prepareSearch(indexName)
+					.setSize(100).get().getHits()) {
+				System.out.println(searchHit.getSource());
+			}
+		}
+		assertEquals(totalRowCountQuery, elasticSearchRepoService.countProductViewsTotalRecords());
+		System.out.println("Total productviews count:" + totalCount);
+		elasticSearchRepoService.deleteAllProductViewsRecords();
 	}
 
 }
