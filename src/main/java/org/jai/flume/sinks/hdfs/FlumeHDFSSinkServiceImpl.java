@@ -81,7 +81,7 @@ public class FlumeHDFSSinkServiceImpl implements FlumeHDFSSinkService {
 		sink.setName("HDFSEventSink-" + UUID.randomUUID());
 		channel = new MemoryChannel();
 		Map<String, String> channelParamters = new HashMap<>();
-		channelParamters.put("capacity", "1000");
+		channelParamters.put("capacity", "100000");
 		channelParamters.put("transactionCapacity", "1000");
 		Context channelContext = new Context(channelParamters);
 		Configurables.configure(channel, channelContext);
