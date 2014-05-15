@@ -30,7 +30,7 @@ public class JsonSerdeServiceImpl implements JsonSerdeService {
 			Manifest manifest = new Manifest();
 			manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION,
 					"1.0");
-			File jarFile = new File("jaihivejsonserde-1.0.jar");
+			File jarFile = new File("./target/jaihivejsonserde-1.0.jar");
 			FileOutputStream fileOutputStream = new FileOutputStream(jarFile);
 			JarOutputStream target = new JarOutputStream(fileOutputStream,
 					manifest);
