@@ -14,6 +14,8 @@ public interface HiveSearchClicksService {
 
 	void addPartition(String dbName, String tbName, String year, String month,
 			String day, String hour);
+	
+	void printHivePartitions(String dbName, String tbName);
 
 	void getSearchClicks(String dbName, String tbName, String year,
 			String month, String day, String hour);

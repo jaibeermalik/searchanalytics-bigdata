@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
@@ -141,18 +142,19 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 				+ userName + "/oozie";
 		conf.setProperty("oozieWorkflowRoot", oozieWorkFlowRoot);
 		Date now = new Date();
-		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(now));
+		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(new DateTime(
+				now).minusDays(1).toDate()));
 		conf.setProperty("jobStartIndex", DateUtils
-				.formatDateOozieTZ(new DateTime(now).plusMinutes(1).toDate()));
+				.formatDateOozieTZ(new DateTime(now).minusDays(1).plusMinutes(1).toDate()));
 		conf.setProperty("jobEnd", DateUtils.formatDateOozieTZ(new DateTime()
 				.plusDays(2).toDate()));
 		conf.setProperty("initialDataset", DateUtils.formatDateOozieTZ(now));
-		conf.setProperty("tzOffset", "1");
+		conf.setProperty("tzOffset", "2");
 
 		// submit and start the workflow job
 		String jobId = client.submit(conf);
 
-		LOG.debug("Workflow job submitted");
+		LOG.debug("Bundle job submitted");
 		// wait until the workflow job finishes printing the status every 10
 		// seconds
 		int retries = 3;
@@ -161,7 +163,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			Thread.sleep(60 * 1000);
 
 			BundleJob bundleJobInfo = client.getBundleJobInfo(jobId);
-			LOG.debug("Workflow job running ...");
+			LOG.debug("Bundle job running ...");
 			LOG.debug("bundleJobInfo Try: {}", i);
 			LOG.debug("bundleJobInfo StartTime: {}",
 					bundleJobInfo.getStartTime());
@@ -172,28 +174,37 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 
 			for (CoordinatorJob coordinatorJob : bundleJobInfo
 					.getCoordinators()) {
-				LOG.debug("bundleJobInfo StartTime: {}",
+				LOG.debug("bundleJobInfo Coord StartTime: {}",
 						coordinatorJob.getStartTime());
-				LOG.debug("bundleJobInfo EndTime: {}",
+				LOG.debug("bundleJobInfo Coord EndTime: {}",
 						coordinatorJob.getEndTime());
-				LOG.debug("coordJobInfo NextMaterizedTime: {}",
+				LOG.debug("bundleJobInfo Coord NextMaterizedTime: {}",
 						coordinatorJob.getNextMaterializedTime());
 				LOG.debug("bundleJobInfo Frequency: {}",
 						coordinatorJob.getFrequency());
-				// LOG.debug("bundleJobInfo ActionConsoleURL: {}",
-				// coordinatorJob
-				// .getActions().get(0).getConsoleUrl());
-				// LOG.debug("coordJobInfo ActionErrorMessage: {}",
-				// coordinatorJob
-				// .getActions().get(0).getErrorMessage());
+				LOG.debug("bundleJobInfo Coord Status: {}",
+						coordinatorJob.getStatus());
+				for (CoordinatorAction action : coordinatorJob.getActions()) {
+					LOG.debug("bundleJobInfo Action Id: {}", action.getId());
+					LOG.debug("bundleJobInfo Action NominalTimeL: {}",
+							action.getNominalTime());
+					LOG.debug("bundleJobInfo Action Runconf: {}",
+							action.getRunConf());
+					LOG.debug("bundleJobInfo Action Status: {}",
+							action.getStatus());
+					LOG.debug("bundleJobInfo ActionConsoleURL: {}",
+							action.getConsoleUrl());
+					LOG.debug("bundleJobInfo ActionErrorMessage: {}",
+							action.getErrorMessage());
+				}
 			}
-			;
+
 			if (bundleJobInfo.getStatus() == Job.Status.RUNNING) {
 				// Wait three times to see the running state is stable..then it
 				// is fine.
 				// Job will keep running even if hive action fails.
-				if (i == 3) {
-					LOG.info("Coord Job in running state! "
+				if (i == retries) {
+					LOG.info("Bundle Job in running state! "
 							+ bundleJobInfo.getStatus());
 					break;
 				} else {
@@ -223,12 +234,14 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		conf.setProperty("nameNode", hadoopClusterService.getHDFSUri());
 		conf.setProperty("jobTracker", hadoopClusterService.getJobTRackerUri());
 		conf.setProperty("workflowRoot", workFlowRoot);
-		Date now = new Date();
-		conf.setProperty("jobStart", DateUtils.formatDateOozieTZ(now));
+		Date nowMinusOneMin = new DateTime().minusMinutes(1).toDate();
+		Date now = new DateTime().toDate();
+		conf.setProperty("jobStart",
+				DateUtils.formatDateOozieTZ(nowMinusOneMin));
 		conf.setProperty("jobEnd", DateUtils.formatDateOozieTZ(new DateTime()
 				.plusHours(2).toDate()));
 		conf.setProperty("initialDataset", DateUtils.formatDateOozieTZ(now));
-		conf.setProperty("tzOffset", "1");
+		conf.setProperty("tzOffset", "2");
 
 		// submit and start the workflow job
 		String jobId = client.submit(conf);
@@ -236,7 +249,7 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 		LOG.debug("Workflow job submitted");
 		// wait until the workflow job finishes printing the status every 10
 		// seconds
-		int retries = 3;
+		int retries = 2;
 		for (int i = 1; i <= retries; i++) {
 			// Sleep 60 sec./ 3 mins
 			Thread.sleep(60 * 1000);
@@ -252,15 +265,23 @@ public class OozieJobsServiceImpl implements OozieJobsService {
 			LOG.debug("coordJobInfo ConsoleURL: {}",
 					coordJobInfo.getConsoleUrl());
 			LOG.debug("coordJobInfo Status: {}", coordJobInfo.getStatus());
-			LOG.debug("coordJobInfo ActionConsoleURL: {}", coordJobInfo
-					.getActions().get(0).getConsoleUrl());
-			LOG.debug("coordJobInfo ActionErrorMessage: {}", coordJobInfo
-					.getActions().get(0).getErrorMessage());
+			for (CoordinatorAction action : coordJobInfo.getActions()) {
+				LOG.debug("coordJobInfo Action Id: {}", action.getId());
+				LOG.debug("coordJobInfo Action NominalTimeL: {}",
+						action.getNominalTime());
+				LOG.debug("coordJobInfo Action Runconf: {}",
+						action.getRunConf());
+				LOG.debug("coordJobInfo Action Status: {}", action.getStatus());
+				LOG.debug("coordJobInfo ActionConsoleURL: {}",
+						action.getConsoleUrl());
+				LOG.debug("coordJobInfo ActionErrorMessage: {}",
+						action.getErrorMessage());
+			}
 			if (coordJobInfo.getStatus() == Job.Status.RUNNING) {
 				// Wait three times to see the running state is stable..then it
 				// is fine.
 				// Job will keep running even if hive action fails.
-				if (i == 3) {
+				if (i == retries) {
 					LOG.info("Coord Job in running state!");
 					break;
 				} else {

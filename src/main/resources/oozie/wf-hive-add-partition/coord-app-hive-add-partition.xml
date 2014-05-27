@@ -1,12 +1,12 @@
 <coordinator-app name="add-partition-coord" frequency="${coord:hours(1)}" start="${jobStart}" end="${jobEnd}" timezone="UTC" xmlns="uri:oozie:coordinator:0.1">
 	<controls>
-		<timeout>1</timeout> 
+		<timeout>5</timeout> 
 		<concurrency>4</concurrency>
 		<execution>FIFO</execution>
       </controls>	
 	<datasets>
 		<dataset name="searchevents" frequency="${coord:hours(1)}" initial-instance="${initialDataset}" timezone="Europe/Amsterdam">
-			<uri-template>hdfs://jaibigdata.com:8020/searchevents/${YEAR}/${MONTH}/${DAY}/${HOUR}</uri-template>
+			<uri-template>hdfs://localhost.localdomain:54321/searchevents/${YEAR}/${MONTH}/${DAY}/${HOUR}</uri-template>
                         <done-flag></done-flag> <!-- empty will check if the dir itself exists or not-->
                 </dataset>
 	</datasets>

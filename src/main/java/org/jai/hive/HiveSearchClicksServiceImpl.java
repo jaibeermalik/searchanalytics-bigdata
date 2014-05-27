@@ -111,6 +111,13 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 			LOG.error(errMsg, e);
 			throw new RuntimeException(errMsg, e);
 		}
+		
+	}
+	
+	@Override
+	public void printHivePartitions(final String dbName, final String tbName)
+	{
+		LOG.debug("Printing Hive table partition info!");
 		hiveTemplate.execute(new HiveClientCallback<Integer>() {
 			@Override
 			public Integer doInHive(HiveClient hiveClient) throws Exception {
@@ -130,6 +137,7 @@ public class HiveSearchClicksServiceImpl implements HiveSearchClicksService {
 			}
 		});
 	}
+			
 
 	@Override
 	public void getSearchClicks(String dbName, String tbName, String year,
