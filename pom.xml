@@ -620,6 +620,10 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>jdk.tools</groupId>
+					<artifactId>jdk.tools</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -766,6 +770,7 @@
 			<artifactId>jetty-util</artifactId>
 			<version>6.1.26.cloudera.2</version>
 		</dependency>
+		<!-- 
 		<dependency>
 			<groupId>jdk.tools</groupId>
 			<artifactId>jdk.tools</artifactId>
@@ -773,6 +778,7 @@
 			<scope>system</scope>
 			<systemPath>/usr/java/jdk1.7.0_51/lib/tools.jar</systemPath>
 		</dependency>
+		 -->
 		<!-- Testing dependencies -->
 		<dependency>
 			<groupId>junit</groupId>

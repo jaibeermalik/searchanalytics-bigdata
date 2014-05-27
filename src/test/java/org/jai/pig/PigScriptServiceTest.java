@@ -20,8 +20,13 @@ public class PigScriptServiceTest extends
 
 	private void prepareSearchEventsData() {
 		try {
-			hadoopClusterService.getFileSystem().delete(
+			boolean delete = hadoopClusterService.getFileSystem().delete(
 					new Path("/searchevents"), true);
+			if (!delete)
+			{
+				System.out.println("Error cleaning up hadoop dir!");
+				fail();
+			}
 			generateSearchAnalyticsDataService
 					.generateAndPushSearchEvents(searchEventsCount);
 		} catch (IllegalArgumentException | IOException e) {
