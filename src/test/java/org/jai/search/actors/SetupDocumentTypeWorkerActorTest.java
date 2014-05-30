@@ -31,7 +31,7 @@ public class SetupDocumentTypeWorkerActorTest {
 	@BeforeClass
 	public static void prepareBeforeClass() {
 		system = ActorSystem.create("TestSearchIndexingSystem", ConfigFactory
-				.load().getConfig("TestSearchIndexingSystem"));
+				.load("application-akka-es-test.conf").getConfig("TestSearchIndexingSystem"));
 	}
 
 	@Before

@@ -30,7 +30,7 @@ class AppConfiguration {
 	 */
 	@Bean(autowire = Autowire.BY_NAME, name = "actorSystem")
 	public ActorSystem actorSystem() {
-		return ActorSystem.create("SearchIndexingSystem", ConfigFactory.load()
+		return ActorSystem.create("SearchIndexingSystem", ConfigFactory.load("application-akka-es.conf")
 				.getConfig("SearchIndexingSystem"));
 	}
 

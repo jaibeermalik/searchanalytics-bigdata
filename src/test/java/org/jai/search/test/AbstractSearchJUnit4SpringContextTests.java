@@ -122,7 +122,7 @@ public abstract class AbstractSearchJUnit4SpringContextTests extends
 					String body = null;
 					while ((body = reader.readLine()) != null) {
 						if (print) {
-							System.out.println("body is:" + body);
+							System.out.println("file is: " + filePath.getName() + "body is:" + body);
 						}
 						if (count) {
 							recordsCount++;

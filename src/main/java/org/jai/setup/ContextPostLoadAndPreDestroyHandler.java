@@ -11,6 +11,7 @@ import org.jai.hive.HiveSearchClicksService;
 import org.jai.hive.serde.JsonSerdeService;
 import org.jai.oozie.OozieJobsService;
 import org.jai.search.client.SearchClientService;
+import org.jai.spark.SparkStreamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,8 @@ public class ContextPostLoadAndPreDestroyHandler {
 	private SearchClientService searchClientService;
 	@Autowired
 	private ActorSystem actorSystem;
+	@Autowired
+	private SparkStreamService sparkStreamService;
 
 	@PostConstruct
 	public void start() {
@@ -49,11 +52,13 @@ public class ContextPostLoadAndPreDestroyHandler {
 		flumeAgentService.setup();
 		// hiveSearchClicksService.setup();
 		oozieJobsService.setup();
+		sparkStreamService.setup();
 	}
 
 	@PreDestroy
 	public void shutdown() {
 		oozieJobsService.shutdown();
+//		sparkStreamService.shutdown();
 		flumeESSinkService.shutdown();
 		flumeHDFSSinkService.shutdown();
 		flumeAgentService.shutdown();
