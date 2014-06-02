@@ -47,12 +47,13 @@ public class ContextPostLoadAndPreDestroyHandler {
 		// NOT required, may be for dependency jar later.
 		// jsonSerdeService.build();
 		hadoopClusterService.start();
+//		sparkStreamService.setup();
 		flumeESSinkService.start();
 		flumeHDFSSinkService.start();
 		flumeAgentService.setup();
 		// hiveSearchClicksService.setup();
 		oozieJobsService.setup();
-		sparkStreamService.setup();
+		
 	}
 
 	@PreDestroy

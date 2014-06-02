@@ -10,4 +10,6 @@ public interface SparkStreamService {
 
 	void startHDFSTxtFileStreams();
 
+	void startFlumeStream();
+
 }

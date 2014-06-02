@@ -15,6 +15,7 @@ import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.channel.MultiplexingChannelSelector;
 import org.apache.flume.conf.Configurables;
+import org.apache.flume.sink.AvroSink;
 import org.apache.flume.sink.RollingFileSink;
 import org.apache.flume.source.AvroSource;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
@@ -40,10 +41,13 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	// here.
 	private AvroSource avroSource;
 	private RollingFileSink sink;
+	private AvroSink sparkAvroSink;
+	private Channel sparkAvroChannel;
 	private Channel channel;
 
 	@Override
 	public void setup() {
+//		createSparkAvroSink();
 		createAvroSourceWithSelectorHDFSAndESSinks();
 		createAgent();
 	}
@@ -65,6 +69,7 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		List<Channel> channels = new ArrayList<>();
 		channels.add(ESChannel);
 		channels.add(HDFSChannel);
+//		channels.add(sparkAvroChannel);
 		selector.setChannels(channels);
 		final Map<String, String> selectorProperties = new HashMap<String, String>();
 		selectorProperties.put("type", "multiplexing");
@@ -74,6 +79,13 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
 				+ ESChannel.getName());
 		selectorProperties.put("default", HDFSChannel.getName());
+		//In case spark avro sink is used.
+//		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
+//				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+//		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
+//				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+//		selectorProperties.put("default", HDFSChannel.getName() + " "
+//				+ sparkAvroChannel.getName());
 		Context selectorContext = new Context(selectorProperties);
 		selector.configure(selectorContext);
 		ChannelProcessor cp = new ChannelProcessor(selector);
@@ -128,12 +140,40 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		avroSource.start();
 	}
 
+	private void createSparkAvroSink() {
+		sparkAvroChannel = new MemoryChannel();
+		Map<String, String> channelParamters = new HashMap<>();
+		channelParamters.put("capacity", "100000");
+		channelParamters.put("transactionCapacity", "1000");
+		Context channelContext = new Context(channelParamters);
+		Configurables.configure(sparkAvroChannel, channelContext);
+		String channelName = "SparkAvroMemoryChannel-" + UUID.randomUUID();
+		sparkAvroChannel.setName(channelName);
+
+		sparkAvroSink = new AvroSink();
+		sparkAvroSink.setName("SparkAvroSink-" + UUID.randomUUID());
+		Map<String, String> paramters = new HashMap<>();
+		paramters.put("type", "avro");
+		paramters.put("hostname", "localhost");
+		paramters.put("port", "41111");
+		paramters.put("batch-size", "100");
+		Context sinkContext = new Context(paramters);
+		sparkAvroSink.configure(sinkContext);
+		Configurables.configure(sparkAvroSink, sinkContext);
+		sparkAvroSink.setChannel(sparkAvroChannel);
+		
+		sparkAvroChannel.start();
+		sparkAvroSink.start();
+	}
+
 	@Override
 	public void shutdown() {
 		if (agent != null) {
 			agent.stop();
 		}
 		if (avroSource != null) {
+			sparkAvroChannel.stop();
+			sparkAvroSink.stop();
 			channel.stop();
 			sink.stop();
 			avroSource.stop();
@@ -166,25 +206,11 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		properties.put("channel.type", "memory");
 		properties.put("channel.capacity", "100000");
 		properties.put("channel.transactionCapacity", "1000");
-		// a1.channels.c1.type = file
-		// a1.channels.c1.checkpointDir = /mnt/flume/checkpoint
-		// a1.channels.c1.dataDirs = /mnt/flume/data
-		// properties.put("sinks", "sink1 sink2");
 		properties.put("sinks", "sink1");
 		properties.put("sink1.type", "avro");
-		// properties.put("sink1.type", "logger");
-		// properties.put("sink2.type", "avro");
-		// properties.put("sink1.hostname", "jaibigdata.com");
 		properties.put("sink1.hostname", "localhost");
-		// properties.put("sink1.port", "41414");
 		properties.put("sink1.port", "44444");
-		// properties.put("sink2.hostname", "localhost");
-		// properties.put("sink2.port", "5565");
-		// properties.put("processor.type", "load_balance");
 		properties.put("processor.type", "default");
-		// properties.put("sinks", "sink1");
-		// properties.put("sink1.type", "logger");
-		// properties.put("sink1.channel", "channel");
 		try {
 			agent = new EmbeddedAgent("myagent");
 			agent.configure(properties);

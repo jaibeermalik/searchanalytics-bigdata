@@ -65,13 +65,28 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
 	<dependencies>
+		<!-- 
+		ElasticSearch dependencies
+		 -->
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>${elasticsearch.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-hadoop-hive</artifactId>
+			<version>1.3.0.M3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch-hadoop-mr</artifactId>
+			<version>1.3.0.M3</version>
+		</dependency>
+		<!-- 
+		Logging dependencies
+		 -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
@@ -97,12 +112,9 @@
 			<artifactId>logback-core</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>2.4</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- 
+		Spring/Data dependencies
+		 -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-orm</artifactId>
@@ -124,15 +136,80 @@
 			<version>2.2.6.RELEASE</version>
 		</dependency>
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch-hadoop-hive</artifactId>
-			<version>1.3.0.M3</version>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-hadoop</artifactId>
+			<version>${spring.data.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>slf4j-log4j</groupId>
+					<artifactId>org.slf4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>apache-log4j-extras</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-hdfs</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-mapreduce-client-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch-hadoop-mr</artifactId>
-			<version>1.3.0.M3</version>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-yarn</artifactId>
+			<version>${spring.data.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-hdfs</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-mapreduce-client-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-elasticsearch</artifactId>
+			<version>1.0.0.RC1</version>
+		</dependency>
+		<!-- 
+		Scala/Akks dependencies
+		Currently used from Spark dependencies to resolve issues.
+		 -->
 		
 		<dependency>
 			<groupId>org.scala-lang</groupId>
@@ -191,6 +268,9 @@
 			<artifactId>jackson-module-jsonSchema</artifactId>
 			<version>${fastxml.jackson.version}</version>
 		</dependency>
+		<!-- 
+		Flume dependencies
+		 -->
 		<dependency>
 			<groupId>org.apache.flume</groupId>
 			<artifactId>flume-ng-embedded-agent</artifactId>
@@ -255,6 +335,9 @@
 			<artifactId>flume-hdfs-sink</artifactId>
 			<version>1.4.0</version>
 		</dependency>
+		<!-- 
+		Oozie dependencies
+		 -->
 		<dependency>
 			<groupId>org.apache.oozie</groupId>
 			<artifactId>oozie-hadoop-test</artifactId>
@@ -375,11 +458,10 @@
 			<artifactId>oozie-hadoop-utils</artifactId>
 			<version>${oozie.hadoop.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>11.0.2</version>
-		</dependency>
+		
+		<!-- 
+		Hive dependencies
+		 -->
 		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-common</artifactId>
@@ -570,6 +652,9 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- 
+		Pig dependencies
+		 -->
 		<dependency>
 			<groupId>org.apache.pig</groupId>
 			<artifactId>pig</artifactId>
@@ -629,6 +714,9 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- 
+		Hadoop dependencies
+		 -->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
@@ -756,45 +844,11 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-hadoop</artifactId>
-			<version>${spring.data.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>slf4j-log4j</groupId>
-					<artifactId>org.slf4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>apache-log4j-extras</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-yarn</artifactId>
-			<version>${spring.data.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-elasticsearch</artifactId>
-			<version>1.0.0.RC1</version>
-		</dependency>
-		<!-- 
 		
+		<!-- 
+		Spark/Shark dependencies
+		 -->
+		<!-- 
 		<dependency>
 			<groupId>org.apache.spark</groupId>
 			<artifactId>spark-core_2.10</artifactId>
@@ -846,7 +900,69 @@
 			<artifactId>spark-tools_2.10</artifactId>
 			<version>${spark.version}</version>
 		</dependency>
-		<!-- -->
+		<dependency>
+			<groupId>edu.berkeley.cs.shark</groupId>
+			<artifactId>shark_2.10</artifactId>
+			<version>0.9.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-anttasks</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-beeline</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-cli</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-exec</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-hbase-handler</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-hwi</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-jdbc</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-metastore</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-serde</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-service</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>edu.berkeley.cs.shark</groupId>
+					<artifactId>hive-shims</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- 
+		Common dependencies
+		-->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>11.0.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jetty</artifactId>
@@ -863,15 +979,14 @@
 			<version>3.6.6.Final</version>
 		</dependency>
 		<!-- 
-		<dependency>
-			<groupId>jdk.tools</groupId>
-			<artifactId>jdk.tools</artifactId>
-			<version>1.7</version>
-			<scope>system</scope>
-			<systemPath>/usr/java/jdk1.7.0_51/lib/tools.jar</systemPath>
-		</dependency>
+		Testing dependencies
 		 -->
-		<!-- Testing dependencies -->
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.4</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

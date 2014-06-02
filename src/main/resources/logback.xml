@@ -85,7 +85,7 @@
 		<logger name="org.jai.elasticsearch"> <level value="DEBUG" /> </logger> <logger 
 		name="org.jai.hive"> <level value="DEBUG" /> </logger> <logger name="org.jai.oozie"> 
 		<level value="DEBUG" /> </logger> 
-	<logger name="org.apache.spark">
+	<logger name="org.jai.spark">
 		<level value="DEBUG" />
 	</logger>
 		-->

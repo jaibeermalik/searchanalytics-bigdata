@@ -3,10 +3,13 @@ package org.jai.spark;
 import java.io.File;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.spark.streaming.flume.FlumeUtils;
+import org.apache.spark.streaming.flume.SparkFlumeEvent;
 import org.jai.hadoop.HadoopClusterService;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -41,11 +44,14 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 				.set("spark.shuffle.spill", "false")
 				.set("spark.driver.host", "localhost")
 				.set("spark.driver.port", "43214");
-		jssc = new JavaStreamingContext(sparkConf, new Duration(1000));
+		jssc = new JavaStreamingContext(sparkConf, new Duration(5000));
 
 		String checkpointDir = hadoopClusterService.getHDFSUri()
 				+ "/sparkcheckpoint";
 		jssc.checkpoint(checkpointDir);
+//		startFlumeStream();
+//		startHDFSTxtFileStreams();
+//		jssc.start();
 	}
 
 	@Override
@@ -73,6 +79,27 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 		jssc.start();
 		LOG.debug("Streaming context running!");
 	}
+	
+	@Override
+	public void startFlumeStream() {
+		JavaDStream<SparkFlumeEvent> flumeStream =
+				FlumeUtils.createStream(jssc,
+						"localhost", 41111);
+
+		QueryStringJDStreams queryStringJDStreams = new QueryStringJDStreams();
+		
+		//Run top top search query string stream
+		JavaPairDStream<Integer, String> topQueryStringsCountInLastOneHour = queryStringJDStreams
+				.topQueryStringsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
+		topQueryStringsCountInLastOneHour.print();
+
+//		Run top product view stream
+		JavaPairDStream<Integer, String> topProductViewsCountInLastOneHour = queryStringJDStreams
+				.topProductViewsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
+		topProductViewsCountInLastOneHour.print();
+		jssc.start();
+	}
+	
 
 	@Override
 	public void storeCustomerFavourites() {
