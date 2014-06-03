@@ -212,6 +212,17 @@ public class QueryStringJDStreams implements Serializable {
 						return in.sortByKey(false);
 					}
 				});
+		sortedCounts
+				.foreach(new Function<JavaPairRDD<Integer, String>, Void>() {
+					public Void call(JavaPairRDD<Integer, String> rdd) {
+						String out = "\nTop 10 entries are: " + rdd.id() + "\n";
+						for (Tuple2<Integer, String> t : rdd.take(10)) {
+							out = out + t.toString() + "\n";
+						}
+						System.out.println(out);
+						return null;
+					}
+				});
 		return sortedCounts;
 	}
 }

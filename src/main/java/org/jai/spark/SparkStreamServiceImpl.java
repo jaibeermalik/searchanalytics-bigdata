@@ -3,7 +3,7 @@ package org.jai.spark;
 import java.io.File;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.StorageLevels;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
@@ -69,11 +69,11 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 		JavaDStream<String> fileStream = jssc.textFileStream(hdfsUri);
 		JavaPairDStream<Integer, String> topQueryStringsCountInLastOneHour = queryStringJDStreams
 				.topQueryStringsCountInLastOneHour(fileStream);
-		topQueryStringsCountInLastOneHour.print();
+//		topQueryStringsCountInLastOneHour.print();
 
 		JavaPairDStream<Integer, String> topProductViewsCountInLastOneHour = queryStringJDStreams
 				.topProductViewsCountInLastOneHour(fileStream);
-		topProductViewsCountInLastOneHour.print();
+//		topProductViewsCountInLastOneHour.print();
 
 		LOG.debug("Starting streaming context!");
 		jssc.start();
@@ -84,19 +84,19 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 	public void startFlumeStream() {
 		JavaDStream<SparkFlumeEvent> flumeStream =
 				FlumeUtils.createStream(jssc,
-						"localhost", 41111);
+						"localhost", 41111, StorageLevels.MEMORY_AND_DISK);
 
 		QueryStringJDStreams queryStringJDStreams = new QueryStringJDStreams();
 		
 		//Run top top search query string stream
 		JavaPairDStream<Integer, String> topQueryStringsCountInLastOneHour = queryStringJDStreams
 				.topQueryStringsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
-		topQueryStringsCountInLastOneHour.print();
+//		topQueryStringsCountInLastOneHour.print();
 
 //		Run top product view stream
 		JavaPairDStream<Integer, String> topProductViewsCountInLastOneHour = queryStringJDStreams
 				.topProductViewsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
-		topProductViewsCountInLastOneHour.print();
+//		topProductViewsCountInLastOneHour.print();
 		jssc.start();
 	}
 	

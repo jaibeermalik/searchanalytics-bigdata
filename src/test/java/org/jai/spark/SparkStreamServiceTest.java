@@ -49,7 +49,6 @@ public class SparkStreamServiceTest extends
 	}
 
 	@Test
-//	@Ignore
 	public void startHDFSTxtFileStreams() throws InterruptedException,
 			IOException {
 		sparkStreamService.startHDFSTxtFileStreams();
@@ -81,7 +80,7 @@ public class SparkStreamServiceTest extends
 		agent.configure(properties);
 		agent.start();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 50; i++) {
 			List<Event> searchEvents = generateSearchAnalyticsDataService
 					.getSearchEvents(searchEventsCount);
 			agent.putAll(searchEvents);
