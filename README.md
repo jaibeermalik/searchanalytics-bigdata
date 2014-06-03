@@ -142,10 +142,10 @@ Top 10 entries are: 321
 Blog Posts
 -----
 Check below blog posts for details how each functionality is used,
-[Customer product search clicks analytics using big data](http://jaibeermalik.wordpress.com/2014/05/14/customer-product-search-clicks-analytics-using-big-data/)
-[Flume: Gathering customer product search clicks data using Apache Flume](http://jaibeermalik.wordpress.com/2014/05/19/flume-gathering-customer-product-search-clicks-data-using-apache-flume/)
-[Hive: Query customer top search query and product views count using Apache Hive](http://jaibeermalik.wordpress.com/2014/05/20/hive-query-customer-top-search-query-and-product-views-count-using-apache-hive/)
-[ElasticSearch-Hadoop: Indexing product views count and customer top search query from Hadoop to ElasticSearch](http://jaibeermalik.wordpress.com/2014/05/22/elasticsearch-hadoop-indexing-product-views-count-and-customer-top-search-query-from-hadoop-to-elasticsearch/)
-[Oozie: Scheduling Coordinator/Bundle jobs for Hive partitioning and ElasticSearch indexing](http://jaibeermalik.wordpress.com/2014/05/28/oozie-scheduling-coordinatorbundle-jobs-for-hive-partitioning-and-elasticsearch-indexing/)
+- [Customer product search clicks analytics using big data](http://jaibeermalik.wordpress.com/2014/05/14/customer-product-search-clicks-analytics-using-big-data/)
+- [Flume: Gathering customer product search clicks data using Apache Flume](http://jaibeermalik.wordpress.com/2014/05/19/flume-gathering-customer-product-search-clicks-data-using-apache-flume/)
+- [Hive: Query customer top search query and product views count using Apache Hive](http://jaibeermalik.wordpress.com/2014/05/20/hive-query-customer-top-search-query-and-product-views-count-using-apache-hive/)
+- [ElasticSearch-Hadoop: Indexing product views count and customer top search query from Hadoop to ElasticSearch](http://jaibeermalik.wordpress.com/2014/05/22/elasticsearch-hadoop-indexing-product-views-count-and-customer-top-search-query-from-hadoop-to-elasticsearch/)
+- [Oozie: Scheduling Coordinator/Bundle jobs for Hive partitioning and ElasticSearch indexing](http://jaibeermalik.wordpress.com/2014/05/28/oozie-scheduling-coordinatorbundle-jobs-for-hive-partitioning-and-elasticsearch-indexing/)
 
 [Jaibeer Malik](http://jaibeermalik.wordpress.com)
