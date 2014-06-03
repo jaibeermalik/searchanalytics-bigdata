@@ -1,4 +1,4 @@
-Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Oozie, ElasticSearch, Akka, Spring Data.
+Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Pig, Oozie, ElasticSearch, Akka, Spring Data, Spark streaming.
 ===================
 
 Repository contains unit/integration test cases to generate analytics based on clicks events related to the product search on any e-commerce website.  
@@ -121,5 +121,31 @@ LocalOozie is used to start oozier server for testing purpose.
 Spring Data Hadoop
 -----
 Spring data is used for hive server management. The bean and context loading support to manage dependent start/shutdown of different servers/services.
+
+Spark Streaming
+-----
+Spark streaming integrated with Flume events to deliver top search queries in last an hour or top viewed products in last an hour.
+<pre>
+Top 10 entries are: 321
+(68,queryString81)
+(67,queryString33)
+(66,queryString17)
+(64,queryString78)
+(62,queryString65)
+(61,queryString9)
+(60,queryString37)
+(59,queryString12)
+(59,queryString25)
+(59,queryString85)
+</pre>
+
+Blog Posts
+-----
+Check below blog posts for details how each functionality is used,
+[Customer product search clicks analytics using big data](http://jaibeermalik.wordpress.com/2014/05/14/customer-product-search-clicks-analytics-using-big-data/)
+[Flume: Gathering customer product search clicks data using Apache Flume](http://jaibeermalik.wordpress.com/2014/05/19/flume-gathering-customer-product-search-clicks-data-using-apache-flume/)
+[Hive: Query customer top search query and product views count using Apache Hive](http://jaibeermalik.wordpress.com/2014/05/20/hive-query-customer-top-search-query-and-product-views-count-using-apache-hive/)
+[ElasticSearch-Hadoop: Indexing product views count and customer top search query from Hadoop to ElasticSearch](http://jaibeermalik.wordpress.com/2014/05/22/elasticsearch-hadoop-indexing-product-views-count-and-customer-top-search-query-from-hadoop-to-elasticsearch/)
+[Oozie: Scheduling Coordinator/Bundle jobs for Hive partitioning and ElasticSearch indexing](http://jaibeermalik.wordpress.com/2014/05/28/oozie-scheduling-coordinatorbundle-jobs-for-hive-partitioning-and-elasticsearch-indexing/)
 
 [Jaibeer Malik](http://jaibeermalik.wordpress.com)
