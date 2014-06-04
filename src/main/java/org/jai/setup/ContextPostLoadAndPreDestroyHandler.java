@@ -47,30 +47,29 @@ public class ContextPostLoadAndPreDestroyHandler {
 		// NOT required, may be for dependency jar later.
 		// jsonSerdeService.build();
 		hadoopClusterService.start();
-//		sparkStreamService.setup();
+		sparkStreamService.setup();
 		flumeESSinkService.start();
 		flumeHDFSSinkService.start();
 		flumeAgentService.setup();
 		// hiveSearchClicksService.setup();
 		oozieJobsService.setup();
-		
 	}
 
 	@PreDestroy
 	public void shutdown() {
 		oozieJobsService.shutdown();
-//		sparkStreamService.shutdown();
+		sparkStreamService.shutdown();
 		flumeESSinkService.shutdown();
 		flumeHDFSSinkService.shutdown();
 		flumeAgentService.shutdown();
 
 		// wait 5 sec for others to get closed.
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			// throw RuntimeException()
-		}
+//		try {
+//			Thread.sleep(5000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//			// throw RuntimeException()
+//		}
 		hadoopClusterService.shutdown();
 		actorSystem.shutdown();
 		searchClientService.shutdown();

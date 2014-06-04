@@ -40,14 +40,16 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	// Ideally external avro source to consume embedded agent data. For testing
 	// here.
 	private AvroSource avroSource;
+	//Rolling file sink in case no actual sink integration required, for testing
 	private RollingFileSink sink;
+	private Channel channel;
+	//Spark sink for real time analytics calculations.
 	private AvroSink sparkAvroSink;
 	private Channel sparkAvroChannel;
-	private Channel channel;
 
 	@Override
 	public void setup() {
-//		createSparkAvroSink();
+		createSparkAvroSink();
 		createAvroSourceWithSelectorHDFSAndESSinks();
 		createAgent();
 	}
@@ -69,23 +71,23 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		List<Channel> channels = new ArrayList<>();
 		channels.add(ESChannel);
 		channels.add(HDFSChannel);
-//		channels.add(sparkAvroChannel);
+		channels.add(sparkAvroChannel);
 		selector.setChannels(channels);
 		final Map<String, String> selectorProperties = new HashMap<String, String>();
 		selectorProperties.put("type", "multiplexing");
 		selectorProperties.put("header", "State");
-		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
-				+ ESChannel.getName());
-		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
-				+ ESChannel.getName());
-		selectorProperties.put("default", HDFSChannel.getName());
-		//In case spark avro sink is used.
 //		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
-//				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+//				+ ESChannel.getName());
 //		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
-//				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
-//		selectorProperties.put("default", HDFSChannel.getName() + " "
-//				+ sparkAvroChannel.getName());
+//				+ ESChannel.getName());
+//		selectorProperties.put("default", HDFSChannel.getName());
+		//In case spark avro sink is used.
+		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
+				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
+				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+		selectorProperties.put("default", HDFSChannel.getName() + " "
+				+ sparkAvroChannel.getName());
 		Context selectorContext = new Context(selectorProperties);
 		selector.configure(selectorContext);
 		ChannelProcessor cp = new ChannelProcessor(selector);
@@ -183,18 +185,10 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	@Override
 	public void processAllEvents() {
 		try {
-			// sleep 10 sec to be able to deliver events from embedded agent to
-			// source.
-			Thread.sleep(10000);
-			// for (Channel channel :
-			// avroSource.getChannelProcessor().getSelector().getAllChannels())
-			// {
-			// Transaction transaction = channel.getTransaction();
-			// transaction.commit();
-			// }
 			flumeHDFSSinkService.getSink().process();
 			flumeESSinkService.getSink().process();
-		} catch (EventDeliveryException | InterruptedException e) {
+			sparkAvroSink.process();
+		} catch (EventDeliveryException e) {
 			String errMsg = "Error processing event!";
 			LOG.error(errMsg, e);
 			throw new RuntimeException(errMsg, e);

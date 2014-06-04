@@ -6,7 +6,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.StorageLevels;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.api.java.JavaDStream;
-import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.flume.FlumeUtils;
 import org.apache.spark.streaming.flume.SparkFlumeEvent;
@@ -49,9 +48,7 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 		String checkpointDir = hadoopClusterService.getHDFSUri()
 				+ "/sparkcheckpoint";
 		jssc.checkpoint(checkpointDir);
-//		startFlumeStream();
-//		startHDFSTxtFileStreams();
-//		jssc.start();
+		startFlumeStream();
 	}
 
 	@Override
@@ -67,39 +64,32 @@ public class SparkStreamServiceImpl implements SparkStreamService {
 		QueryStringJDStreams queryStringJDStreams = new QueryStringJDStreams();
 
 		JavaDStream<String> fileStream = jssc.textFileStream(hdfsUri);
-		JavaPairDStream<Integer, String> topQueryStringsCountInLastOneHour = queryStringJDStreams
-				.topQueryStringsCountInLastOneHour(fileStream);
-//		topQueryStringsCountInLastOneHour.print();
+		queryStringJDStreams.topQueryStringsCountInLastOneHour(fileStream);
 
-		JavaPairDStream<Integer, String> topProductViewsCountInLastOneHour = queryStringJDStreams
-				.topProductViewsCountInLastOneHour(fileStream);
-//		topProductViewsCountInLastOneHour.print();
+		queryStringJDStreams.topProductViewsCountInLastOneHour(fileStream);
 
 		LOG.debug("Starting streaming context!");
 		jssc.start();
 		LOG.debug("Streaming context running!");
 	}
-	
+
 	@Override
 	public void startFlumeStream() {
-		JavaDStream<SparkFlumeEvent> flumeStream =
-				FlumeUtils.createStream(jssc,
-						"localhost", 41111, StorageLevels.MEMORY_AND_DISK);
+		JavaDStream<SparkFlumeEvent> flumeStream = FlumeUtils.createStream(
+				jssc, "localhost", 41111, StorageLevels.MEMORY_AND_DISK);
 
 		QueryStringJDStreams queryStringJDStreams = new QueryStringJDStreams();
-		
-		//Run top top search query string stream
-		JavaPairDStream<Integer, String> topQueryStringsCountInLastOneHour = queryStringJDStreams
-				.topQueryStringsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
-//		topQueryStringsCountInLastOneHour.print();
 
-//		Run top product view stream
-		JavaPairDStream<Integer, String> topProductViewsCountInLastOneHour = queryStringJDStreams
-				.topProductViewsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
-//		topProductViewsCountInLastOneHour.print();
+		// Run top top search query string stream
+		queryStringJDStreams
+				.topQueryStringsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
+
+		// Run top product view stream
+		//TODO: uncomment to get both stats.
+//		queryStringJDStreams
+//				.topProductViewsCountInLastOneHourUsingSparkFlumeEvent(flumeStream);
 		jssc.start();
 	}
-	
 
 	@Override
 	public void storeCustomerFavourites() {

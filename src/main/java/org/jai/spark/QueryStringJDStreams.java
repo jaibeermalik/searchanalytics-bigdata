@@ -215,7 +215,7 @@ public class QueryStringJDStreams implements Serializable {
 		sortedCounts
 				.foreach(new Function<JavaPairRDD<Integer, String>, Void>() {
 					public Void call(JavaPairRDD<Integer, String> rdd) {
-						String out = "\nTop 10 entries are: " + rdd.id() + "\n";
+						String out = "\nTop 10 entries for stream id: " + rdd.id() + "\n";
 						for (Tuple2<Integer, String> t : rdd.take(10)) {
 							out = out + t.toString() + "\n";
 						}

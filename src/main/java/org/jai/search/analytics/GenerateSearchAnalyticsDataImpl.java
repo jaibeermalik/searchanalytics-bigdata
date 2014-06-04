@@ -62,11 +62,13 @@ public class GenerateSearchAnalyticsDataImpl implements
 			final ProductSearchResult searchProducts = productQueryService
 					.searchProducts(searchCriteria);
 			for (int i = 1, j = 1; i <= numberOfEvents; i++) {
-				// sleep 30 secs every 1k requests...the further channel may not be able to process that fast.
+				// sleep 30 secs every 1k requests...the further channel may not
+				// be able to process that fast.
 				if (i == 1000 * j) {
-					System.out.println("Sleeping for 1 sec, a batch of 1000 records processing! current count: " + i);
+					System.out
+							.println("Sleeping for 1 sec, a batch of 1000 records processing! current count: "
+									+ i);
 					Thread.sleep(1000);
-//					flumeAgentService.processAllEvents();
 					j++;
 				}
 				final SearchQueryInstruction searchQueryInstruction = getRandomSearchQueryInstruction(
@@ -74,15 +76,6 @@ public class GenerateSearchAnalyticsDataImpl implements
 				final Event event = getJsonEvent(searchQueryInstruction);
 				flumeAgentService.getFlumeAgent().put(event);
 			}
-
-			// flumeAgentService.processAllEvents();
-			// ObjectMapper mapper = new ObjectMapper();
-			// for (Product product : searchProducts.getProducts())
-			// {
-			// String writeProductValueAsString =
-			// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(
-			// productQueryService.getProduct(config, product.getId()));
-			// }
 
 			// wait for 5 sec before all events are submitted...in test case
 			// agent
