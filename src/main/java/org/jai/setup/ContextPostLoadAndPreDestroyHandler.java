@@ -5,8 +5,10 @@ import javax.annotation.PreDestroy;
 
 import org.jai.flume.agent.FlumeAgentService;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
+import org.jai.flume.sinks.hbase.FlumeHbaseSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.HadoopClusterService;
+import org.jai.hbase.HbaseService;
 import org.jai.hive.HiveSearchClicksService;
 import org.jai.hive.serde.JsonSerdeService;
 import org.jai.oozie.OozieJobsService;
@@ -40,6 +42,10 @@ public class ContextPostLoadAndPreDestroyHandler {
 	private ActorSystem actorSystem;
 	@Autowired
 	private SparkStreamService sparkStreamService;
+	@Autowired
+	private HbaseService hbaseService;
+	@Autowired
+	private FlumeHbaseSinkService flumeHbaseSinkService;
 
 	@PostConstruct
 	public void start() {
@@ -48,8 +54,10 @@ public class ContextPostLoadAndPreDestroyHandler {
 		// jsonSerdeService.build();
 		hadoopClusterService.start();
 		sparkStreamService.setup();
+		hbaseService.setup();
 		flumeESSinkService.start();
 		flumeHDFSSinkService.start();
+		flumeHbaseSinkService.start();
 		flumeAgentService.setup();
 		// hiveSearchClicksService.setup();
 		oozieJobsService.setup();
@@ -60,6 +68,7 @@ public class ContextPostLoadAndPreDestroyHandler {
 		oozieJobsService.shutdown();
 		sparkStreamService.shutdown();
 		flumeESSinkService.shutdown();
+		flumeHbaseSinkService.shutdown();
 		flumeHDFSSinkService.shutdown();
 		flumeAgentService.shutdown();
 
@@ -70,6 +79,7 @@ public class ContextPostLoadAndPreDestroyHandler {
 //			e.printStackTrace();
 //			// throw RuntimeException()
 //		}
+		hbaseService.shutdown();
 		hadoopClusterService.shutdown();
 		actorSystem.shutdown();
 		searchClientService.shutdown();

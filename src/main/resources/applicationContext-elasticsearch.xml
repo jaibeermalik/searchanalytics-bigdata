@@ -122,20 +122,25 @@
 
 	<!-- Currently only using MR1 -->
 
-	<!-- HBASE settings <hdp:hbase-configuration id="hbaseConfiguration" configuration-ref="hadoopConfiguration" 
-		delete-connection="true" zk-quorum="localhost" zk-port="10235"> </hdp:hbase-configuration> 
-		<bean id="hbaseTemplate" class="org.springframework.data.hadoop.hbase.HbaseTemplate" 
-		p:configuration-ref="hbaseConfiguration"/> 
-		
-		-->
-		
-	<!-- ElasticSearch Spring data -->
-	<elasticsearch:transport-client id="esClient" cluster-nodes="localhost:9310" cluster-name="jai-testclusterName" />
-	
-	<bean name="elasticsearchTemplate" class="org.springframework.data.elasticsearch.core.ElasticsearchTemplate">
-        <constructor-arg name="client" ref="esClient"/>
-    </bean>
+	<!-- HBASE settings -->
+	<hdp:hbase-configuration id="hbaseConfiguration" 
+		configuration-ref="hadoopConfiguration" stop-proxy="false" delete-connection="false"
+		zk-quorum="localhost" zk-port="10235" >
+	</hdp:hbase-configuration>
+	<bean id="hbaseTemplate" class="org.springframework.data.hadoop.hbase.HbaseTemplate"
+		p:configuration-ref="hbaseConfiguration" />
 
-	<elasticsearch:repositories base-package="org.jai.elasticsearch" elasticsearch-template-ref="elasticsearchTemplate" />
-    	
+
+	<!-- ElasticSearch Spring data -->
+	<elasticsearch:transport-client id="esClient"
+		cluster-nodes="localhost:9310" cluster-name="jai-testclusterName" />
+
+	<bean name="elasticsearchTemplate"
+		class="org.springframework.data.elasticsearch.core.ElasticsearchTemplate">
+		<constructor-arg name="client" ref="esClient" />
+	</bean>
+
+	<elasticsearch:repositories base-package="org.jai.elasticsearch"
+		elasticsearch-template-ref="elasticsearchTemplate" />
+
 </beans>

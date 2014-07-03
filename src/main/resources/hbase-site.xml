@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+	<property>
+		<name>hbase.zookeeper.property.clientPort</name>
+		<value>10235</value>
+	</property>
+	<property>
+		<name>hbase.zookeeper.quorum</name>
+		<value>localhost</value>
+	</property>
+	<property>
+		<name>hbase.tmp.dir</name>
+		<value>./target/hbasetom</value>
+	</property>
+	<property>
+		<name>hbase.rootdir</name>
+		<value>hdfs://localhost.localdomain:54321/hbase</value>
+	</property>
+	<property>
+		<name>hbase.master.port</name>
+		<value>44335</value>
+	</property>
+	<property>
+		<name>hbase.master.info.port</name>
+		<value>44345</value>
+	</property>
+	<property>
+		<name>hbase.regionserver.port</name>
+		<value>44435</value>
+	</property>
+	<property>
+		<name>hbase.regionserver.info.port</name>
+		<value>44445</value>
+	</property>
+	<property>
+		<name>zookeeper.znode.parent</name>
+		<value>/hbase</value>
+	</property>
+</configuration>

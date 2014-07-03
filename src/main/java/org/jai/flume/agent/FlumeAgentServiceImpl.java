@@ -19,6 +19,7 @@ import org.apache.flume.sink.AvroSink;
 import org.apache.flume.sink.RollingFileSink;
 import org.apache.flume.source.AvroSource;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
+import org.jai.flume.sinks.hbase.FlumeHbaseSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +36,18 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	private FlumeHDFSSinkService flumeHDFSSinkService;
 	@Autowired
 	private FlumeESSinkService flumeESSinkService;
+	@Autowired
+	private FlumeHbaseSinkService flumeHbaseSinkService;
 
 	private static EmbeddedAgent agent;
 	// Ideally external avro source to consume embedded agent data. For testing
 	// here.
 	private AvroSource avroSource;
-	//Rolling file sink in case no actual sink integration required, for testing
+	// Rolling file sink in case no actual sink integration required, for
+	// testing
 	private RollingFileSink sink;
 	private Channel channel;
-	//Spark sink for real time analytics calculations.
+	// Spark sink for real time analytics calculations.
 	private AvroSink sparkAvroSink;
 	private Channel sparkAvroChannel;
 
@@ -57,6 +61,7 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 	private void createAvroSourceWithSelectorHDFSAndESSinks() {
 		Channel ESChannel = flumeESSinkService.getChannel();
 		Channel HDFSChannel = flumeHDFSSinkService.getChannel();
+		Channel HbaseChannel = flumeHbaseSinkService.getChannel();
 
 		final Map<String, String> properties = new HashMap<String, String>();
 		properties.put("type", "avro");
@@ -72,22 +77,26 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		channels.add(ESChannel);
 		channels.add(HDFSChannel);
 		channels.add(sparkAvroChannel);
+		channels.add(HbaseChannel);
 		selector.setChannels(channels);
 		final Map<String, String> selectorProperties = new HashMap<String, String>();
 		selectorProperties.put("type", "multiplexing");
 		selectorProperties.put("header", "State");
-//		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
-//				+ ESChannel.getName());
-//		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
-//				+ ESChannel.getName());
-//		selectorProperties.put("default", HDFSChannel.getName());
-		//In case spark avro sink is used.
+		// selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
+		// + ESChannel.getName());
+		// selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() +
+		// " "
+		// + ESChannel.getName());
+		// selectorProperties.put("default", HDFSChannel.getName());
+		// In case spark avro sink is used.
 		selectorProperties.put("mapping.VIEWED", HDFSChannel.getName() + " "
-				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+				+ ESChannel.getName() + " " + sparkAvroChannel.getName() + " "
+				+ HbaseChannel.getName());
 		selectorProperties.put("mapping.FAVOURITE", HDFSChannel.getName() + " "
-				+ ESChannel.getName() + " " + sparkAvroChannel.getName());
+				+ ESChannel.getName() + " " + sparkAvroChannel.getName() + " "
+				+ HbaseChannel.getName());
 		selectorProperties.put("default", HDFSChannel.getName() + " "
-				+ sparkAvroChannel.getName());
+				+ sparkAvroChannel.getName() + " " + HbaseChannel.getName());
 		Context selectorContext = new Context(selectorProperties);
 		selector.configure(selectorContext);
 		ChannelProcessor cp = new ChannelProcessor(selector);
@@ -163,7 +172,7 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 		sparkAvroSink.configure(sinkContext);
 		Configurables.configure(sparkAvroSink, sinkContext);
 		sparkAvroSink.setChannel(sparkAvroChannel);
-		
+
 		sparkAvroChannel.start();
 		sparkAvroSink.start();
 	}
