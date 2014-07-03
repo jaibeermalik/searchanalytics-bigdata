@@ -86,5 +86,13 @@
 		<value></value>
 	</property>
  	-->
+ 	<property>
+		<name>hive.metastore.server.min.threads</name>
+		<value>10</value>
+	</property>
+ 	<property>
+  <name>hive.metastore.server.max.threads</name>
+  <value>1000</value>
+</property>
 
 </configuration>

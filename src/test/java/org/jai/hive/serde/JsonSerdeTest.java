@@ -8,6 +8,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaIntObjectInspector;
@@ -23,9 +24,9 @@ public class JsonSerdeTest {
 	public void initialize() throws Exception {
 		final Configuration conf = null;
 		final Properties tbl = new Properties();
-		tbl.setProperty(Constants.LIST_COLUMNS,
+		tbl.setProperty(serdeConstants.LIST_COLUMNS,
 				"hostedmachinename,pageurl,customerid,timestamp,filters");
-		tbl.setProperty(Constants.LIST_COLUMN_TYPES,
+		tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
 				"string,string,int,bigint,array<struct<code:string,value:string>>");
 		jsonSerde.initialize(conf, tbl);
 	}

@@ -1,6 +1,7 @@
 package org.jai.search.analytics;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,7 +172,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 			throws UnknownHostException {
 		final SearchQueryInstruction searchQueryInstruction = new SearchQueryInstruction();
 		// 5 machines
-		searchQueryInstruction.setHostedMachineName(Inet4Address.getLocalHost()
+		searchQueryInstruction.setHostedMachineName(InetAddress.getLocalHost()
 				.getHostAddress() + new Random().nextInt(5));
 		// same customer id repeated twice.
 		final Long customerId = Long.valueOf(new Random().nextInt(500));

@@ -14,4 +14,6 @@ public interface HbaseService {
 	void insertEventData(byte[] body);
 
 	int getTotalSearchClicksCount();
+
+	void removeAll();
 }

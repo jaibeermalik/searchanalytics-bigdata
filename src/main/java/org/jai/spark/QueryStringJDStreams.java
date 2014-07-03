@@ -44,6 +44,7 @@ public class QueryStringJDStreams implements Serializable {
 				});
 		JavaPairDStream<String, Integer> queryStringStream = onlyQueryStringStream
 				.map(new PairFunction<String, String, Integer>() {
+					@Override
 					public Tuple2<String, Integer> call(String eventString) {
 						String queryString = getQueryString(eventString);
 						return new Tuple2<String, Integer>(queryString, 1);
@@ -76,6 +77,7 @@ public class QueryStringJDStreams implements Serializable {
 				});
 		JavaPairDStream<String, Integer> productIdCountsStream = onlyQueryStringStream
 				.map(new PairFunction<String, String, Integer>() {
+					@Override
 					public Tuple2<String, Integer> call(String eventString) {
 						String productIdString = getProductIdString(eventString);
 						return new Tuple2<String, Integer>(productIdString, 1);
@@ -111,6 +113,7 @@ public class QueryStringJDStreams implements Serializable {
 		JavaPairDStream<String, Integer> queryStringStream = onlyQueryStringStream
 				.map(new PairFunction<SparkFlumeEvent, String, Integer>() {
 
+					@Override
 					public Tuple2<String, Integer> call(SparkFlumeEvent event) {
 						String eventString = new String(event.event().getBody()
 								.array());
@@ -147,6 +150,7 @@ public class QueryStringJDStreams implements Serializable {
 				});
 		JavaPairDStream<String, Integer> productIdCountsStream = onlyQueryStringStream
 				.map(new PairFunction<SparkFlumeEvent, String, Integer>() {
+					@Override
 					public Tuple2<String, Integer> call(SparkFlumeEvent event) {
 						String eventString = new String(event.event().getBody()
 								.array());
@@ -189,10 +193,12 @@ public class QueryStringJDStreams implements Serializable {
 		JavaPairDStream<String, Integer> counts = countStringStream
 				.reduceByKeyAndWindow(
 						new Function2<Integer, Integer, Integer>() {
+							@Override
 							public Integer call(Integer i1, Integer i2) {
 								return i1 + i2;
 							}
 						}, new Function2<Integer, Integer, Integer>() {
+							@Override
 							public Integer call(Integer i1, Integer i2) {
 								return i1 - i2;
 							}
@@ -200,6 +206,7 @@ public class QueryStringJDStreams implements Serializable {
 
 		JavaPairDStream<Integer, String> swappedCounts = counts
 				.map(new PairFunction<Tuple2<String, Integer>, Integer, String>() {
+					@Override
 					public Tuple2<Integer, String> call(
 							Tuple2<String, Integer> in) {
 						return in.swap();
@@ -207,6 +214,7 @@ public class QueryStringJDStreams implements Serializable {
 				});
 		JavaPairDStream<Integer, String> sortedCounts = swappedCounts
 				.transform(new Function<JavaPairRDD<Integer, String>, JavaPairRDD<Integer, String>>() {
+					@Override
 					public JavaPairRDD<Integer, String> call(
 							JavaPairRDD<Integer, String> in) throws Exception {
 						return in.sortByKey(false);
@@ -214,6 +222,7 @@ public class QueryStringJDStreams implements Serializable {
 				});
 		sortedCounts
 				.foreach(new Function<JavaPairRDD<Integer, String>, Void>() {
+					@Override
 					public Void call(JavaPairRDD<Integer, String> rdd) {
 						String out = "\nSpark, Top 10 entries for stream id: " + rdd.id() + "\n";
 						for (Tuple2<Integer, String> t : rdd.take(10)) {

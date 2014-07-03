@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -302,11 +303,11 @@ public class SetupDocumentTypeWorkerActorTest {
 		String invalidMessage = "blah blah";
 		ref.tell(invalidMessage, null);
 		// Expect the unhandled message now.
-		FiniteDuration duration = FiniteDuration.create(1, TimeUnit.SECONDS);
+		FiniteDuration duration = Duration.create(1, TimeUnit.SECONDS);
 		subscriber.expectMsgClass(duration, UnhandledMessage.class);
 		TestActor.Message message = subscriber.lastMessage();
 		UnhandledMessage resultMsg = (UnhandledMessage) message.msg();
-		assertEquals(invalidMessage, (String) resultMsg.getMessage());
+		assertEquals(invalidMessage, resultMsg.getMessage());
 		// Actor state check
 		assertEquals(null, actor.getIndexDocumentType());
 	}

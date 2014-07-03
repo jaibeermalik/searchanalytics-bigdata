@@ -197,6 +197,7 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 			flumeHDFSSinkService.getSink().process();
 			flumeESSinkService.getSink().process();
 			sparkAvroSink.process();
+			flumeHbaseSinkService.getSink().process();
 		} catch (EventDeliveryException e) {
 			String errMsg = "Error processing event!";
 			LOG.error(errMsg, e);

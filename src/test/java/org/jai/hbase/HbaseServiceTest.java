@@ -12,6 +12,7 @@ public class HbaseServiceTest extends AbstractSearchJUnit4SpringContextTests {
 
 	@Autowired
 	private HbaseService hbaseService;
+	private int searchEventsCount = 200;
 
 	@Test
 	public void testHbaseServer() {
@@ -20,7 +21,7 @@ public class HbaseServiceTest extends AbstractSearchJUnit4SpringContextTests {
 
 	@Test
 	public void testSearchClicksEventsData() {
-		int searchEventsCount = 200;
+		hbaseService.removeAll();
 		for (Event event : generateSearchAnalyticsDataService
 				.getSearchEvents(searchEventsCount)) {
 			hbaseService.insertEventData(event.getBody());
@@ -31,11 +32,11 @@ public class HbaseServiceTest extends AbstractSearchJUnit4SpringContextTests {
 
 	@Test
 	public void testSearchClicksEventsDataForFlumeAgent() throws InterruptedException {
-		int searchEventsCount = 200;
+		hbaseService.removeAll();
 		generateSearchAnalyticsDataService
 				.generateAndPushSearchEvents(searchEventsCount);
-		//wait 1 sec to get the hbase data process
-		Thread.sleep(1000);
+		//wait 10 sec to get the hbase data process
+		Thread.sleep(10000);
 		assertEquals(searchEventsCount,
 				hbaseService.getTotalSearchClicksCount());
 	}

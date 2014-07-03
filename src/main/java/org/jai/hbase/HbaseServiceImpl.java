@@ -169,6 +169,26 @@ public class HbaseServiceImpl implements HbaseService {
 		LOG.debug("Checking searchclicks table count done!");
 		return totalCount;
 	}
+	
+	@Override
+	public void removeAll() {
+		LOG.debug("Setting up searchclicks table!");
+		String tableName = "searchclicks";
+		TableName name = TableName.valueOf(tableName);
+		HTableDescriptor desc = new HTableDescriptor(name );
+		HColumnDescriptor columnFamily = new HColumnDescriptor("event".getBytes());
+		desc.addFamily(columnFamily);
+		try {
+			HBaseAdmin hBaseAdmin = new HBaseAdmin(miniHBaseCluster.getConf());
+			hBaseAdmin.disableTable(name);
+			hBaseAdmin.deleteTable(name);
+			hBaseAdmin.createTable(desc);
+			hBaseAdmin.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		};
+		LOG.debug("Setting up searchclicks table done!");
+	}
 
 	@Override
 	public void testHbaseServer() {

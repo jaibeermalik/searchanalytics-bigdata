@@ -14,8 +14,7 @@ import org.apache.flume.Transaction;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.hbase.HBaseSink;
-import org.apache.flume.sink.hdfs.HDFSEventSink;
-import org.jai.flume.sinks.hdfs.FlumeHDFSSinkServiceImpl;
+import org.apache.flume.sink.hbase.HBaseSinkConfigurationConstants;
 import org.jai.hadoop.HadoopClusterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,12 +90,10 @@ public class FlumeHbaseSinkServiceImpl implements FlumeHbaseSinkService{
 		sink = new HBaseSink();
 		sink.setName("HbaseSink-" + UUID.randomUUID());
 		Map<String, String> paramters = new HashMap<>();
-		paramters.put("type", "hbase");
-		paramters.put("table", "searchclicks");
-		paramters.put("columnFamily", "event");
-//		paramters.put("column", "json");
-		paramters.put("batchSize", "10");
-		paramters.put("serializer", "org.apache.flume.sink.hbase.RegexHbaseEventSerializer");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_TABLE, "searchclicks");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_COLUMN_FAMILY, "event");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_BATCHSIZE, "1000");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER, "org.apache.flume.sink.hbase.RegexHbaseEventSerializer");
 
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);

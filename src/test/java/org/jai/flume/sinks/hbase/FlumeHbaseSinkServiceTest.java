@@ -19,6 +19,7 @@ public class FlumeHbaseSinkServiceTest extends AbstractSearchJUnit4SpringContext
 	
 	@Test
 	public void testProcessEvents() {
+		hbaseService.removeAll();
 		int searchEventsCount = 101;
 		List<Event> searchEvents = generateSearchAnalyticsDataService
 				.getSearchEvents(searchEventsCount);

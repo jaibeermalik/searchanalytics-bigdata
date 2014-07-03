@@ -163,7 +163,7 @@ public class JSONSerDe extends AbstractSerDe {
 				field = field.toString().replaceAll("\n", "\\\\n");
 			}
 			if (fieldTypeInfo.getTypeName().equalsIgnoreCase(
-					Constants.BIGINT_TYPE_NAME)) {
+					serdeConstants.BIGINT_TYPE_NAME)) {
 				field = new Long(String.valueOf(field));
 			}
 			return field;

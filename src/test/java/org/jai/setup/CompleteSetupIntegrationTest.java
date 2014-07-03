@@ -1,8 +1,9 @@
 package org.jai.setup;
 
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -24,8 +25,10 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.jai.elasticsearch.ElasticSearchRepoService;
 import org.jai.flume.sinks.elasticsearch.FlumeESSinkService;
+import org.jai.flume.sinks.hbase.FlumeHbaseSinkService;
 import org.jai.flume.sinks.hdfs.FlumeHDFSSinkService;
 import org.jai.hadoop.HadoopClusterService;
+import org.jai.hbase.HbaseService;
 import org.jai.hive.HiveSearchClicksService;
 import org.jai.oozie.OozieJobsService;
 import org.jai.search.analytics.GenerateSearchAnalyticsDataService;
@@ -49,12 +52,17 @@ public class CompleteSetupIntegrationTest extends
 	@Autowired
 	private FlumeHDFSSinkService flumeHDFSSinkService;
 	@Autowired
+	private FlumeHbaseSinkService flumeHbaseSinkService;
+	@Autowired
 	private HiveSearchClicksService hiveSearchClicksService;
 	@Autowired
 	private OozieJobsService oozieJobsService;
 	@Autowired
 	private ElasticSearchRepoService customerTopQueryService;
-	private int searchEventsCount = 11;
+	@Autowired
+	private HbaseService hbaseService;
+
+	private int searchEventsCount = 10;
 
 	@Test
 	public void testFullDataFlow() {
@@ -72,6 +80,8 @@ public class CompleteSetupIntegrationTest extends
 			FlumehdfsSinkAndTestData(searchEvents);
 
 			FlumeESSinkAndTestData(searchEvents);
+
+			FlumeHbaseSinkAndTestData(searchEvents);
 
 			TestHiveDatabaseSearchClicks();
 
@@ -157,7 +167,8 @@ public class CompleteSetupIntegrationTest extends
 			System.out.println(searchHit.getSource());
 		}
 
-		long countTotalRecords = customerTopQueryService.countCustomerTopQueryTotalRecords();
+		long countTotalRecords = customerTopQueryService
+				.countCustomerTopQueryTotalRecords();
 		assertTrue(countTotalRecords > 0);
 		assertEquals(totalCount, countTotalRecords);
 		customerTopQueryService.deleteAllCustomerTopQueryRecords();
@@ -213,6 +224,14 @@ public class CompleteSetupIntegrationTest extends
 				}
 			}
 		}
+	}
+
+	private void FlumeHbaseSinkAndTestData(List<Event> searchEvents)
+			throws EventDeliveryException, IOException, FileNotFoundException {
+		hbaseService.removeAll();
+		flumeHbaseSinkService.processEvents(searchEvents);
+		
+		assertEquals(searchEventsCount, hbaseService.getTotalSearchClicksCount());
 	}
 
 }

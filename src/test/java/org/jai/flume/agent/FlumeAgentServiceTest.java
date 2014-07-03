@@ -22,6 +22,7 @@ public class FlumeAgentServiceTest extends
 	private FlumeAgentService flumeAgentService;
 	@Autowired
 	private HbaseService hbaseService;
+	private int searchEventsCount = 100;
 
 	@Test
 	public void testGetFlumeAgent() throws EventDeliveryException,
@@ -29,7 +30,6 @@ public class FlumeAgentServiceTest extends
 
 		EmbeddedAgent flumeAgent = flumeAgentService.getFlumeAgent();
 
-		int searchEventsCount = 11;
 		List<Event> searchEvents = generateSearchAnalyticsDataService
 				.getSearchEvents(searchEventsCount);
 		for (Event event : searchEvents) {
@@ -42,8 +42,7 @@ public class FlumeAgentServiceTest extends
 	@Test
 	public void testProcessEvents() throws EventDeliveryException,
 			InterruptedException {
-
-		int searchEventsCount = 100;
+		hbaseService.removeAll();
 		generateSearchAnalyticsDataService
 				.generateAndPushSearchEvents(searchEventsCount);;
 		
