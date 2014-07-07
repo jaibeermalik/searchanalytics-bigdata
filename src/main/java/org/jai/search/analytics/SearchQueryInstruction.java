@@ -3,6 +3,8 @@ package org.jai.search.analytics;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,30 +19,43 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @SuppressWarnings("serial")
 public class SearchQueryInstruction implements Serializable {
 	@JsonIgnore
-	private final String _eventIdSuffix;
+	@JsonProperty(value = "eventidsuffix")
+	private String _eventIdSuffix;
 
+	@JsonProperty(value = "eventid", required = true)
 	private String eventId;
 
+	@JsonProperty(value = "hostedmachinename")
 	private String hostedMachineName;
 
+	@JsonProperty(value = "pageurl")
 	private String pageUrl;
 
+	@JsonProperty(value = "customerid")
 	private Long customerId;
 
+	@JsonProperty(value = "sessionid")
 	private String sessionId;
 
+	@JsonProperty(value = "querystring")
 	private String queryString;
 
+	@JsonProperty(value = "sortorder")
 	private String sortOrder;
 
+	@JsonProperty(value = "pagenumber")
 	private Long pageNumber;
 
+	@JsonProperty(value = "totalhits")
 	private Long totalHits;
 
+	@JsonProperty(value = "hitsshown")
 	private Long hitsShown;
 
+	@JsonProperty(value = "createdtimestampinmillis")
 	private final Long createdTimeStampInMillis;
 
+	@JsonProperty(value = "clickeddocid")
 	private String clickedDocId;
 
 	private Boolean favourite;
@@ -62,6 +77,10 @@ public class SearchQueryInstruction implements Serializable {
 
 	public String getEventIdSuffix() {
 		return _eventIdSuffix;
+	}
+
+	public void setEventIdSuffix(String eventIdSuffix) {
+		this._eventIdSuffix = eventIdSuffix;
 	}
 
 	public Long getCreatedTimeStampInMillis() {
@@ -163,20 +182,37 @@ public class SearchQueryInstruction implements Serializable {
 	public Map<String, Set<String>> getFilters() {
 		return filters;
 	}
+	
+	@JsonIgnore
+	public List<FacetFilter> getFacetFilters() {
+		return _filters;
+	}
 
-	public void setFilters(final Map<String, Set<String>> filters) {
-		if (_filters != null) {
+	public void setFilters(final Map<String, Set<String>> newFilters) {
+		if (filters == null) {
+			filters = new HashMap<>();
+		} else {
+			filters.clear();
+		}
+
+		if (_filters == null) {
+			_filters = new ArrayList<SearchQueryInstruction.FacetFilter>();
+		} else {
 			_filters.clear();
 		}
-		for (final Entry<String, Set<String>> entry : filters.entrySet()) {
-			for (final String filterValue : entry.getValue()) {
-				if (_filters == null) {
-					_filters = new ArrayList<SearchQueryInstruction.FacetFilter>();
-				}
-				_filters.add(new FacetFilter(entry.getKey(), filterValue));
+
+		for (final Entry<String, Set<String>> entry : newFilters.entrySet()) {
+			Set<String> filter = filters.get(entry.getKey());
+			if (filter == null) {
+				filter = new HashSet<>();
 			}
+			for (final String filterValue : entry.getValue()) {
+				_filters.add(new FacetFilter(entry.getKey(), filterValue));
+				filter.add(filterValue);
+			}
+			filters.put(entry.getKey(), filter);
 		}
-		this.filters = filters;
+		// this.filters = newFilters;
 	}
 
 	@Override
@@ -186,13 +222,16 @@ public class SearchQueryInstruction implements Serializable {
 				.append(queryString).append(sortOrder).append(pageNumber)
 				.append(totalHits).append(hitsShown)
 				.append(createdTimeStampInMillis).append(clickedDocId)
-				.append(filters).toString();
+				.append(filters).append(eventId).append(_filters)
+				.append(_eventIdSuffix).toString();
 	}
 
-	@SuppressWarnings("unused")
-	private static class FacetFilter implements Serializable {
+	public static class FacetFilter implements Serializable {
 		private String code;
 		private String value;
+
+		public FacetFilter() {
+		}
 
 		public FacetFilter(String code, String value) {
 			this.code = code;
@@ -213,6 +252,12 @@ public class SearchQueryInstruction implements Serializable {
 
 		public void setCode(String code) {
 			this.code = code;
+		}
+
+		@Override
+		public String toString() {
+			return new ToStringBuilder(this).append(code).append(value)
+					.toString();
 		}
 	}
 }

@@ -15,6 +15,7 @@ import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.sink.hbase.HBaseSink;
 import org.apache.flume.sink.hbase.HBaseSinkConfigurationConstants;
+import org.jai.flume.sinks.hbase.serializer.HbaseJsonEventSerializer;
 import org.jai.hadoop.HadoopClusterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,10 +92,15 @@ public class FlumeHbaseSinkServiceImpl implements FlumeHbaseSinkService{
 		sink.setName("HbaseSink-" + UUID.randomUUID());
 		Map<String, String> paramters = new HashMap<>();
 		paramters.put(HBaseSinkConfigurationConstants.CONFIG_TABLE, "searchclicks");
-		paramters.put(HBaseSinkConfigurationConstants.CONFIG_COLUMN_FAMILY, "event");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_COLUMN_FAMILY, new String(HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES));
 		paramters.put(HBaseSinkConfigurationConstants.CONFIG_BATCHSIZE, "1000");
-		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER, "org.apache.flume.sink.hbase.RegexHbaseEventSerializer");
+//		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER, RegexHbaseEventSerializer.class.getName());
+//		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER + "." + RegexHbaseEventSerializer.REGEX_CONFIG, RegexHbaseEventSerializer.REGEX_DEFAULT);
+//		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER + "." + RegexHbaseEventSerializer.IGNORE_CASE_CONFIG, "true");
+//		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER + "." + RegexHbaseEventSerializer.COL_NAME_CONFIG, "json");
+		paramters.put(HBaseSinkConfigurationConstants.CONFIG_SERIALIZER, HbaseJsonEventSerializer.class.getName());
 
+		
 		Context sinkContext = new Context(paramters);
 		sink.configure(sinkContext);
 		sink.setChannel(channel);

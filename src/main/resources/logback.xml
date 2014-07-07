@@ -85,8 +85,8 @@
 		<logger name="org.jai.elasticsearch"> <level value="DEBUG" /> </logger> <logger 
 		name="org.jai.hive"> <level value="DEBUG" /> </logger> <logger name="org.jai.oozie"> 
 		<level value="DEBUG" /> </logger> 
+		-->
 	<logger name="org.jai.hbase">
 		<level value="DEBUG" />
 	</logger>
-		-->
 </configuration>

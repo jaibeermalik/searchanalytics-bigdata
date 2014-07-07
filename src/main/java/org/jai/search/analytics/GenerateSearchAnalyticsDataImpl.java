@@ -1,6 +1,5 @@
 package org.jai.search.analytics;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -113,7 +112,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		}
 	}
 
-	private Event getJsonEvent(
+	public Event getJsonEvent(
 			final SearchQueryInstruction searchQueryInstruction)
 			throws JsonProcessingException {
 		final String searchQueryInstructionAsString = getObjectMapper()
@@ -139,7 +138,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		return event;
 	}
 
-	private ObjectMapper getObjectMapper() throws JsonProcessingException {
+	public ObjectMapper getObjectMapper() throws JsonProcessingException {
 		final ObjectMapper mapper = new ObjectMapper();
 		// try without pretty print..all data in single line
 		return mapper
@@ -167,7 +166,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		return searchCriteria;
 	}
 
-	private SearchQueryInstruction getRandomSearchQueryInstruction(
+	public SearchQueryInstruction getRandomSearchQueryInstruction(
 			final int recordNumber, final ProductSearchResult searchProducts)
 			throws UnknownHostException {
 		final SearchQueryInstruction searchQueryInstruction = new SearchQueryInstruction();
@@ -188,7 +187,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		//
 		if (new Random().nextBoolean()) {
 			searchQueryInstruction.setQueryString("queryString"
-					+ new Random().nextInt(100));
+					+ new Random().nextInt(20));
 		}
 		// random product id for odd
 		final String clickedDocId = recordNumber % 2 == 0 ? null : String
@@ -296,7 +295,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 	}
 
 	@SuppressWarnings("serial")
-	private static class SearchFieldsLowerCaseNameStrategy extends
+	public static class SearchFieldsLowerCaseNameStrategy extends
 			PropertyNamingStrategyBase {
 		@Override
 		public String translate(final String input) {

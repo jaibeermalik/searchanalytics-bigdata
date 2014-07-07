@@ -1,5 +1,7 @@
 package org.jai.hbase;
 
+import java.util.List;
+
 public interface HbaseService {
 
 	void getSearchClicks();
@@ -16,4 +18,10 @@ public interface HbaseService {
 	int getTotalSearchClicksCount();
 
 	void removeAll();
+
+	int findTotalRecordsForValidCustomers();
+
+	List<String> findTopTenSearchQueryStringForLastAnHour();
+	
+	List<String> findTopTenSearchFiltersForLastAnHour();
 }
