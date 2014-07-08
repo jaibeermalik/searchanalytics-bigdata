@@ -179,15 +179,21 @@ public class FlumeAgentServiceImpl implements FlumeAgentService {
 
 	@Override
 	public void shutdown() {
-		if (agent != null) {
-			agent.stop();
+		try{
+			if (agent != null) {
+				agent.stop();
+			}
+			if (avroSource != null) {
+				sparkAvroChannel.stop();
+				sparkAvroSink.stop();
+				channel.stop();
+				sink.stop();
+				avroSource.stop();
+			}
 		}
-		if (avroSource != null) {
-			sparkAvroChannel.stop();
-			sparkAvroSink.stop();
-			channel.stop();
-			sink.stop();
-			avroSource.stop();
+		catch(Exception ex)
+		{
+			//Do nothing
 		}
 	}
 

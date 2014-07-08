@@ -24,4 +24,10 @@ public interface HbaseService {
 	List<String> findTopTenSearchQueryStringForLastAnHour();
 	
 	List<String> findTopTenSearchFiltersForLastAnHour();
+	
+	List<String> findTopTenSearchFiltersForLastAnHourUsingRangeScan();
+	
+	int numberOfTimesAFacetFilterClickedInLastAnHour(final String columnName, final String columnValue);
+
+	List<String> getAllSearchQueryStringsByCustomerInLastOneMonth(Long customerId);
 }

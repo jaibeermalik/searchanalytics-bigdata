@@ -3,6 +3,7 @@ package org.jai.hbase;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,10 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.PrefixFilter;
+import org.apache.hadoop.hbase.filter.SingleColumnValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.jai.flume.sinks.hbase.serializer.HbaseJsonEventSerializer;
@@ -101,6 +106,8 @@ public class HbaseServiceImpl implements HbaseService {
 	@Override
 	public void shutdown() {
 		try {
+			miniHBaseCluster.stopRegionServer(1);
+			miniHBaseCluster.stopMaster(1);
 			miniHBaseCluster.waitUntilShutDown(); //shutdown();
 			miniZooKeeperCluster.shutdown();
 		} catch (IOException e) {
@@ -118,7 +125,7 @@ public class HbaseServiceImpl implements HbaseService {
 		desc.addFamily(new HColumnDescriptor(
 				HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES));
 		desc.addFamily(new HColumnDescriptor(
-				HbaseJsonEventSerializer.COLUMFAMILY_CUSTOMER_BYTES));
+				HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES));
 		desc.addFamily(new HColumnDescriptor(
 				HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES));
 		desc.addFamily(new HColumnDescriptor(
@@ -155,13 +162,16 @@ public class HbaseServiceImpl implements HbaseService {
 	@Override
 	public void getSearchClicks() {
 		LOG.debug("Checking searchclicks table content!");
-		List<String> rows = hbaseTemplate.find("searchclicks", new String(
-				HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES),
+		Scan scan = new Scan();
+		scan.addFamily(HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES);
+		scan.addFamily(HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES);
+		scan.addFamily(HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES);
+		List<String> rows = hbaseTemplate.find("searchclicks", scan,
 				new RowMapper<String>() {
 					@Override
 					public String mapRow(Result result, int rowNum)
 							throws Exception {
-						return new String(result.getRow());
+						return Arrays.toString(result.rawCells());
 					}
 				});
 		for (String row : rows) {
@@ -183,7 +193,7 @@ public class HbaseServiceImpl implements HbaseService {
 						// return new
 						// String(result.getValue(Bytes.toBytes("event"),
 						// Bytes.toBytes("json")));
-						return new String(result.value());
+						 return new String(result.value());
 					}
 				});
 		for (String row : rows) {
@@ -262,14 +272,14 @@ public class HbaseServiceImpl implements HbaseService {
 	public int findTotalRecordsForValidCustomers() {
 		int totalCount = 0;
 		List<String> rows = hbaseTemplate.find("searchclicks", new String(
-				HbaseJsonEventSerializer.COLUMFAMILY_CUSTOMER_BYTES),
+				HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES),
 				new RowMapper<String>() {
 					@Override
 					public String mapRow(Result result, int rowNum)
 							throws Exception {
 						String customerid = new String(
 								result.getValue(
-										HbaseJsonEventSerializer.COLUMFAMILY_CUSTOMER_BYTES,
+										HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES,
 										Bytes.toBytes("customerid")));
 						return customerid;
 					}
@@ -432,5 +442,148 @@ public class HbaseServiceImpl implements HbaseService {
 		}
 		LOG.debug("Checking findTopTenSearchQueryStringForLastAnHour done!");
 		return topFacetFilters;
+	}
+	
+	@Override
+	public List<String> findTopTenSearchFiltersForLastAnHourUsingRangeScan() {
+		Scan scan = new Scan();
+		for (String facetField : SearchFacetName.categoryFacetFields) {
+			scan.addColumn(HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES,
+					Bytes.toBytes(facetField));
+		}
+		DateTime dateTime = new DateTime();
+		try {
+			scan.setTimeRange(dateTime.minusHours(1).getMillis(), dateTime.getMillis());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		List<String> topFacetFilters = new ArrayList<>();
+		final Map<String, List<String>> columnData = new HashMap<>();
+		hbaseTemplate.find("searchclicks", scan, new RowMapper<String>() {
+			@Override
+			public String mapRow(Result result, int rowNum) throws Exception {
+				for (String facetField : SearchFacetName.categoryFacetFields) {
+					byte[] value = result.getValue(
+							HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES,
+							Bytes.toBytes(facetField));
+					if (value != null) {
+						String facetValue = new String(value);
+						LOG.debug("Facet field: {} and Facet Value: {}",
+								new Object[] { facetField, facetValue });
+						List<String> list = columnData.get(facetField);
+						if (list == null) {
+							list = new ArrayList<>();
+							list.add(facetValue);
+							columnData.put(facetField, list);
+						} else {
+							list.add(facetValue);
+						}
+					}
+				}
+				return null;
+			}
+		});
+
+		final Map<String, Integer> counts = new HashMap<>();
+		String separatorToken = "_jaijai_";
+		for (Entry<String, List<String>> entry : columnData.entrySet()) {
+			for (String facetFilterValue : entry.getValue()) {
+				String key = entry.getKey() + separatorToken + facetFilterValue;
+				Integer integer = counts.get(key);
+				if (integer == null) {
+					counts.put(key, Integer.valueOf(1));
+				} else {
+					counts.put(key, Integer.valueOf(integer.intValue() + 1));
+				}
+			}
+		}
+
+		List<String> sortedKeys = Ordering.natural()
+				.onResultOf(Functions.forMap(counts))
+				.immutableSortedCopy(counts.keySet());
+		for (int j = 1; j <= 10 && j < sortedKeys.size(); j++) {
+			String queryString = sortedKeys.get(sortedKeys.size() - j);
+			String[] split = queryString.split(separatorToken);
+			LOG.debug(
+					"Top 10 filters are sortedKeys, FacetCode: {}, FacetValue:{}, Count:{}",
+					new Object[] { split[0], split[1], counts.get(queryString) });
+			topFacetFilters.add(split[1]);
+		}
+		LOG.debug("Checking findTopTenSearchFiltersForLastAnHourUsingRangeScan done!");
+		return topFacetFilters;
+	}
+	
+	@Override
+	public int numberOfTimesAFacetFilterClickedInLastAnHour(final String columnName, final String columnValue) {
+		Scan scan = new Scan();
+		scan.addColumn(HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES,
+				Bytes.toBytes(columnName));
+		Filter filter = new SingleColumnValueFilter(HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES,
+				Bytes.toBytes(columnName), CompareOp.EQUAL, Bytes.toBytes(columnValue));
+		scan.setFilter(filter);
+		DateTime dateTime = new DateTime();
+		try {
+			scan.setTimeRange(dateTime.minusHours(1).getMillis(), dateTime.getMillis());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		int count =
+		hbaseTemplate.find("searchclicks", scan, new RowMapper<String>() {
+			@Override
+			public String mapRow(Result result, int rowNum) throws Exception {
+				byte[] value = result.getValue(
+						HbaseJsonEventSerializer.COLUMFAMILY_FILTERS_BYTES,
+						Bytes.toBytes(columnName));
+				if (value != null) {
+					String facetValue = new String(value);
+					LOG.debug("Facet field: {} and Facet Value: {}",
+							new Object[] { columnName, facetValue });
+				}
+				return null;
+			}
+		}).size();
+
+		LOG.debug("Checking numberOfTimesAFacetFilterClickedInLastAnHour done with count:{}", count);
+		return count;
+	}
+	
+	@Override
+	public List<String> getAllSearchQueryStringsByCustomerInLastOneMonth(final Long customerId) {
+		Scan scan = new Scan();
+		scan.addColumn(HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES,
+				Bytes.toBytes("customerid"));
+		Filter filter = new PrefixFilter(Bytes.toBytes(customerId + "_"));
+		scan.setFilter(filter);
+		DateTime dateTime = new DateTime();
+		try {
+			scan.setTimeRange(dateTime.minusDays(30).getMillis(), dateTime.getMillis());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		List<String> rows = hbaseTemplate.find("searchclicks", scan, new RowMapper<String>() {
+			@Override
+			public String mapRow(Result result, int rowNum) throws Exception {
+				LOG.debug("Row is: {}", new String(result.getRow()));
+				byte[] value = result.getValue(
+						HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES,
+						Bytes.toBytes("querystring"));
+				String queryString = null;
+				if (value != null) {
+					queryString = new String(value);
+					LOG.debug("Query String: {}",
+							new Object[] { queryString });
+				}
+				return queryString;
+			}
+		});
+		List<String> list = new ArrayList<>();
+		for (String string : rows) {
+			if(string !=null )
+			{
+				list.add(string);
+			}
+		}
+		LOG.debug("Checking getAllSearchQueryStringsByCustomerInLastOneMonth done with list:{}", list);
+		return list;
 	}
 }

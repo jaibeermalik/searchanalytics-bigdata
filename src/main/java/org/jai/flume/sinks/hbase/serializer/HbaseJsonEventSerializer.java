@@ -29,8 +29,6 @@ import com.google.common.collect.Lists;
 public class HbaseJsonEventSerializer implements HbaseEventSerializer {
 
 	public static final byte[] COLUMFAMILY_CLIENT_BYTES = "client".getBytes();
-	public static final byte[] COLUMFAMILY_CUSTOMER_BYTES = "customer"
-			.getBytes();
 	public static final byte[] COLUMFAMILY_SEARCH_BYTES = "search".getBytes();
 	public static final byte[] COLUMFAMILY_FILTERS_BYTES = "filters".getBytes();
 	private byte[] payload;
@@ -103,9 +101,9 @@ public class HbaseJsonEventSerializer implements HbaseEventSerializer {
 				String.valueOf(searchQueryInstruction.getPageUrl()).getBytes());
 
 		// Customer Info
-		put.add(COLUMFAMILY_CUSTOMER_BYTES, "customerid".getBytes(), String
+		put.add(COLUMFAMILY_CLIENT_BYTES, "customerid".getBytes(), String
 				.valueOf(searchQueryInstruction.getCustomerId()).getBytes());
-		put.add(COLUMFAMILY_CUSTOMER_BYTES, "sessionid".getBytes(), String
+		put.add(COLUMFAMILY_CLIENT_BYTES, "sessionid".getBytes(), String
 				.valueOf(searchQueryInstruction.getSessionId()).getBytes());
 
 		// Search Column Family Info
@@ -143,6 +141,7 @@ public class HbaseJsonEventSerializer implements HbaseEventSerializer {
 		}
 
 		// Headers Column Family Info
+		//Currently not used, can be set if required.
 		if (depositHeaders) {
 			for (Map.Entry<String, String> entry : headers.entrySet()) {
 				put.add("headers".getBytes(),
