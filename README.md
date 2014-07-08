@@ -1,4 +1,4 @@
-Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Pig, Oozie, ElasticSearch, Akka, Spring Data, Spark streaming.
+Analyzing Search Clicks Data Using Flume, Hadoop, Hive, Pig, Oozie, ElasticSearch, Akka, Spring Data, Spark streaming, Hbase.
 ===================
 
 Repository contains unit/integration test cases to generate analytics based on clicks events related to the product search on any e-commerce website.  
@@ -138,6 +138,40 @@ Top 10 entries are: 321
 (59,queryString25)
 (59,queryString85)
 </pre>
+
+Hbase
+-----
+MiniHbaseCluster setup to store data. Spring data to use hbase client. Integration wih Flume agent to directly store data in hbase using HbaseSink. HbaseJsonSerializer to serialize the JSON data.
+Schema Design,
+<pre>
+{
+"client:eventid" => "24-1399386809805-629e9b5f-ff4a-4168-8664-6c8df8214aa7",
+"client:eventidsuffix" => "629e9b5f-ff4a-4168-8664-6c8df8214aa7",
+"client:hostedmachinename" => "192.168.182.1330",
+"client:pageurl" => "http://blahblah:/5",
+"client:createdtimestampinmillis" => 1399386809805,
+"client:cutomerid" => 24,
+"client:sessionid" => "648a011d-570e-48ef-bccc-84129c9fa400", 
+"search:querystring" => null,
+"search:sortorder" => desc,
+"search:pagenumber" => 3,
+"search:totalhits" => 28,
+"search:hitsshown" => 7,
+"search:clickeddocid" => "41",
+"search:favourite" => null,
+"filters:searchfacettype_color_level_2" => "Blue",
+"filters:searchfacettype_age_level_2" => "12-18 years"
+}
+</pre>
+Hbase functionality,
+<pre>
+->Get total calls in last an hour from client column family
+->Get top 10 search query string in last an hour from search column family
+->Get top 10 clicked facet filters in last an hour from filters column family
+->Get recent search query string by a customer in last 30 days from search column family
+->Dynamic column generation for facet filters to accommodate new filters. 
+</pre>
+
 
 Blog Posts
 -----
