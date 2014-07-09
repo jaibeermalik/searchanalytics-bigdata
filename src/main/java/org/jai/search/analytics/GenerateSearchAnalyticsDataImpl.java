@@ -178,7 +178,7 @@ public class GenerateSearchAnalyticsDataImpl implements
 		searchQueryInstruction.setCustomerId(customerId);
 		// Event id combination of uniqueuuid + timestamp + customerid
 		// Changing event id to customerid + timestamp + unique id (to test search by customer id in hbase row key)
-		final String eventId = customerId + "_" +  searchQueryInstruction.getCreatedTimeStampInMillis()
+		final String eventId = customerId + "-" +  searchQueryInstruction.getCreatedTimeStampInMillis()
 				 + "-" + searchQueryInstruction.getEventIdSuffix();
 		searchQueryInstruction.setEventId(eventId);
 		// random url

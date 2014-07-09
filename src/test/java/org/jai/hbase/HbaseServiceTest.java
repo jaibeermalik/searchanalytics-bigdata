@@ -105,7 +105,7 @@ public class HbaseServiceTest extends AbstractSearchJUnit4SpringContextTests {
 		assertTrue(hbaseService.numberOfTimesAFacetFilterClickedInLastAnHour(
 				"searchfacettype_brand_level_2", "Apple") > 0);
 	}
-	
+
 	@Test
 	public void getAllSearchQueryStringsByCustomerInLastOneMonth()
 			throws InterruptedException {
@@ -113,8 +113,14 @@ public class HbaseServiceTest extends AbstractSearchJUnit4SpringContextTests {
 		generateSearchAnalyticsDataService.generateAndPushSearchEvents(1000);
 		// wait 10 sec for the hbase data to get processed
 		Thread.sleep(1000);
-		//TODO: get exact customer id, passed value may not have been generated, chances to fail.
-		assertTrue(hbaseService.getAllSearchQueryStringsByCustomerInLastOneMonth(100l).size() > 0);
+
+		// TODO: get exact customer id, passed value may not have been
+		// generated, chances to fail.
+		String customerId = hbaseService.getSearchClicksRowKeysWithValidQueryString().get(10).split("-")[0];
+		assertTrue(hbaseService
+				.getAllSearchQueryStringsByCustomerInLastOneMonth(
+						Long.valueOf(customerId))
+				.size() > 0);
 	}
 
 }

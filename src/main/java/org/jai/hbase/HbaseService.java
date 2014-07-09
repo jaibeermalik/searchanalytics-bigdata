@@ -4,7 +4,9 @@ import java.util.List;
 
 public interface HbaseService {
 
-	void getSearchClicks();
+	List<String> getSearchClicks();
+	
+	List<String> getSearchClicksRowKeysWithValidQueryString();
 
 	void testHbaseServer();
 	

@@ -160,7 +160,7 @@ public class HbaseServiceImpl implements HbaseService {
 	}
 
 	@Override
-	public void getSearchClicks() {
+	public List<String> getSearchClicks() {
 		LOG.debug("Checking searchclicks table content!");
 		Scan scan = new Scan();
 		scan.addFamily(HbaseJsonEventSerializer.COLUMFAMILY_CLIENT_BYTES);
@@ -178,6 +178,31 @@ public class HbaseServiceImpl implements HbaseService {
 			LOG.debug("searchclicks table content, Table returned row: {}", row);
 		}
 		LOG.debug("Checking searchclicks table content done!");
+		return rows;
+	}
+	
+	@Override
+	public List<String> getSearchClicksRowKeysWithValidQueryString() {
+		LOG.debug("Checking getSearchClicksRowKeys searchclicks table content!");
+		Scan scan = new Scan();
+		scan.addFamily(HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES);
+		SingleColumnValueFilter filter = new SingleColumnValueFilter(HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES, 
+				Bytes.toBytes("querystring"), CompareOp.NOT_EQUAL, Bytes.toBytes("jaiblahblah"));
+		filter.setFilterIfMissing(true);
+		scan.setFilter(filter);
+		List<String> rows = hbaseTemplate.find("searchclicks", scan,
+				new RowMapper<String>() {
+					@Override
+					public String mapRow(Result result, int rowNum)
+							throws Exception {
+						return new String(result.getRow());
+					}
+				});
+		for (String row : rows) {
+			LOG.debug("searchclicks table content, Table returned row key: {}", row);
+		}
+		LOG.debug("Checking getSearchClicksRowKeys searchclicks table content done!");
+		return rows;
 	}
 
 	@Override
@@ -549,10 +574,11 @@ public class HbaseServiceImpl implements HbaseService {
 	
 	@Override
 	public List<String> getAllSearchQueryStringsByCustomerInLastOneMonth(final Long customerId) {
+		LOG.debug("Calling getAllSearchQueryStringsByCustomerInLastOneMonth for customerid: {}", customerId);
 		Scan scan = new Scan();
 		scan.addColumn(HbaseJsonEventSerializer.COLUMFAMILY_SEARCH_BYTES,
-				Bytes.toBytes("customerid"));
-		Filter filter = new PrefixFilter(Bytes.toBytes(customerId + "_"));
+				Bytes.toBytes("querystring"));
+		Filter filter = new PrefixFilter(Bytes.toBytes(customerId + "-"));
 		scan.setFilter(filter);
 		DateTime dateTime = new DateTime();
 		try {
