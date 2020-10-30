@@ -10,7 +10,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<fastxml.jackson.version>2.9.10.4</fastxml.jackson.version>
 		<flume.version>1.4.0-cdh5.0.2</flume.version>
-		<hive.version>0.12.0-cdh5.0.2</hive.version>
+		<hive.version>3.1.3000.7.2.2.0-244</hive.version>
 		<hadoop.version>2.3.0-cdh5.0.2</hadoop.version>
 		<hadoop.mr1.version>2.3.0-mr1-cdh5.0.2</hadoop.mr1.version>
 		<oozie.hadoop.version>2.3.0-mr1-cdh5.0.2.oozie-4.0.0-cdh5.0.2</oozie.hadoop.version>
