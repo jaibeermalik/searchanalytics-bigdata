@@ -14,7 +14,7 @@
 		<hadoop.version>2.3.0-cdh5.0.2</hadoop.version>
 		<hadoop.mr1.version>2.3.0-mr1-cdh5.0.2</hadoop.mr1.version>
 		<oozie.hadoop.version>2.3.0-mr1-cdh5.0.2.oozie-4.0.0-cdh5.0.2</oozie.hadoop.version>
-		<oozie.version>4.0.0-cdh5.0.2</oozie.version>
+		<oozie.version>5.2.0</oozie.version>
 		<pig.version>0.12.0-cdh5.0.2</pig.version>
 		<spring.data.version>2.0.0.RC3-cdh5</spring.data.version>
 		<log4j.version>1.2.16</log4j.version>
