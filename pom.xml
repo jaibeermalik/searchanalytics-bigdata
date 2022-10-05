@@ -8,7 +8,7 @@
 	<name>Search Analytics using Big Data</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<fastxml.jackson.version>2.11.3</fastxml.jackson.version>
+		<fastxml.jackson.version>2.12.6.1</fastxml.jackson.version>
 		<flume.version>1.4.0-cdh5.0.2</flume.version>
 		<hive.version>0.12.0-cdh5.0.2</hive.version>
 		<hadoop.version>2.3.0-cdh5.0.2</hadoop.version>
